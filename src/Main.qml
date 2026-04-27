@@ -8,49 +8,86 @@ import QtQuick.Layouts
 import io.github.rfrench3.controllable as Gamepad
 
 ApplicationWindow {
-    id: root
     visible: true
 
-
-    // Gamepad.PageNavigation {
-    //     targetScrollbar: view.ScrollBar.vertical   
-    // }
-
-    // ScrollView {
-    //     id: view
-    //     anchors.fill: parent
-
-    //     ListView {
-    //         model: 200
-    //         delegate: ItemDelegate {
-    //             text: "Item " + index + " " + Gamepad.Gamepad.rightY
-
-    //             required property int index
-    //         }
-    //     }
-    // }
-
-    Gamepad.ScrollHandler {
-        scrollBar: view.ScrollBar.vertical
+    header: TabBar {
+        id: bar
+        width: parent.width
+        TabButton {
+            text: qsTr("Home")
+        }
+        TabButton {
+            text: qsTr("Discover")
+        }
     }
 
+    Connections {
+        target: Gamepad.Gamepad
 
-    ScrollView {
-        id: view
-        anchors.fill: parent
-        
+        function onButtonPressed(buttonId, button_down) {
+            if (!button_down) return;
 
-        ListView {
-            model: 200
-            delegate: ItemDelegate {
-                text: "Item " + index
-
-                required property int index
+            if (buttonId == 0) {
+                bar.currentIndex = 0
+            }
+            if (buttonId == 1) {
+                bar.currentIndex = 1
             }
         }
     }
 
-    
+    StackLayout {
+        anchors.fill: parent
+        currentIndex: bar.currentIndex
+        Item {
+            id: homeTab
+            Gamepad.ScrollHandler {
+                scrollBar: view.ScrollBar.vertical
+            }
+
+            Layout.fillHeight: true
+
+
+            ScrollView {
+                id: view
+                anchors.fill: parent
+                ListView {
+                    model: 20
+                    delegate: ItemDelegate {
+                        text: "Item " + index
+
+                        required property int index
+                    }
+                }
+            }
+        }
+        Item {
+            id: discoverTab
+            Gamepad.ScrollHandler {
+                flickable: flick
+            }
+
+            Flickable {
+                id: flick
+
+                contentWidth: rectangle.width
+                contentHeight: rectangle.height
+
+
+                Rectangle {
+                    id: rectangle
+                    width: 4000; height: 4000
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: "lightsteelblue" }
+                        GradientStop { position: 1.0; color: "blue" }
+                    }
+                }
+
+
+            }
+
+        }
+    }
 
 
 }

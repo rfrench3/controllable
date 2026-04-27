@@ -25,22 +25,20 @@ BuildRequires:  cmake(Qt6Widgets)
 
 BuildRequires:  cmake(KF6Kirigami)
 BuildRequires:  cmake(KF6CoreAddons)
-BuildRequires:  cmake(KF6Config)
-BuildRequires:  cmake(KF6I18n)
-BuildRequires:  cmake(KF6IconThemes)
-BuildRequires:  cmake(KF6KirigamiAddons)
 
-Requires:       kf6-kirigami%{?_isa}
-Requires:       kf6-kirigami-addons%{?_isa}
-Requires:       kf6-qqc2-desktop-style%{?_isa}
-Requires:       which%{?_isa}
+BuildRequires:  cmake(KF6I18n)
+
+
+
+
+
+
+
 
 Provides:       controllable = %{version}-%{release}
 
 %description
 A QML module that provides support for controllers.
-- Simple and powerful
-- Full support for all input types (keyboard/mouse, controller, touchscreen)
 
 %prep
 %autosetup
@@ -54,20 +52,18 @@ A QML module that provides support for controllers.
 
 %check
 appstream-util validate-relax --nonet %{buildroot}%{_kf6_metainfodir}/%{orgname}.*.xml || :
-desktop-file-validate %{buildroot}%{_kf6_datadir}/applications/%{orgname}.desktop
 
 %files
-%license LICENSES/{BSD-3-Clause.txt,CC0-1.0.txt,GPL-2.0-or-later.txt,FSFAP.txt}
+%license LICENSE.txt
 %doc README.md
-%{_kf6_bindir}/bazzite_updater
-%{_kf6_datadir}/applications/%{orgname}.desktop
+
+
 %{_kf6_metainfodir}/%{orgname}.*.xml
-%{_kf6_datadir}/icons/hicolor/scalable/apps/%{orgname}.svg
-%{_kf6_libdir}/libgamepad-support.so
-%{_kf6_qmldir}/io/github/rfrench3/Gamepad/*
+%{_kf6_libdir}/libcontrollable.so
+%{_kf6_qmldir}/io/github/rfrench3/controllable/*
 
 
 
 %changelog
-* Thu Feb 05 2026 Robert French
-- Initial rpm build of Bazzite Updater
+* Sun Apr 26 2026 Robert French
+- First day of splitting this module off of bazzite updater

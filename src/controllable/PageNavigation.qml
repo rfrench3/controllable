@@ -19,7 +19,7 @@ import io.github.rfrench3.controllable
 Item {
     id: root
 
-    property bool active: true
+    property bool active: visible
 
     // When given a scroll bar, the right stick will smoothly scroll through it
     property ScrollBar targetScrollbar: null

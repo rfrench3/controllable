@@ -9,9 +9,12 @@ import io.github.rfrench3.controllable
 Item {
     id: root
 
+    //TODO
+    property var scrollType: null // percentage based vs distance based
+
     property Flickable flickable: null
     property ScrollBar scrollBar: null
-    property bool active: true
+    property bool active: visible
     property real sensitivity: 1
 
     Timer {
