@@ -14,7 +14,7 @@ Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
     , m_timer(new QTimer(this))
 {
-    // Focus is manually handled
+    // Focus is manually handled to work with Qt
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 
     if (!SDL_Init(SDL_INIT_GAMEPAD)) {
@@ -34,12 +34,25 @@ Gamepad::Gamepad(QObject *parent)
         }
     );
 
-    changeGamepadLabels(0);
+    changeGamepadLabels(NO_CONTROLLER);
 }
 
-void Gamepad::setPollController(bool windowActiveState)
+double Gamepad::getAxisValue(SDL_GamepadAxis axis) const
 {
-    if (windowActiveState == true) {
+    // If the gamepad or axis is invalid, this returns 0
+    SDL_Gamepad *gamepad = SDL_GetGamepadFromID(m_focusedJoystick);
+
+    double value = static_cast<double>(SDL_GetGamepadAxis(gamepad, axis)) / static_cast<double>(SDL_MAX_SINT16);
+
+    if (std::abs(value) < DEADZONE)
+        return 0;
+
+    return SDL_clamp(value, -1, 1);
+}
+
+void Gamepad::setPollController(bool windowActive)
+{
+    if (windowActive == true) {
         // Window focused: Starting controller polling
 
         // Clear any events that occurred when unfocused,
@@ -51,21 +64,10 @@ void Gamepad::setPollController(bool windowActiveState)
             else if (event.type == SDL_EVENT_GAMEPAD_REMOVED)
                 handleGamepadRemoved(event.gdevice.which);
         }
-
-        for (auto &[id, data] : m_gamepads) {
-            data.leftStickVertical = 0;
-            data.rightStickVertical = 0;
-        }
-
         m_timer->start(POLLING_RATE);
     } else {
         // Window unfocused: Pausing controller polling
         m_timer->stop();
-
-        for (auto &[id, data] : m_gamepads) {
-            data.leftStickVertical = 0;
-            data.rightStickVertical = 0;
-        }
     }
 }
 
@@ -77,81 +79,80 @@ void Gamepad::pollSDL()
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             Q_EMIT buttonPressed(event.gbutton.button, true);
             changeGamepadLabels(event.gbutton.which);
+            setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             Q_EMIT buttonPressed(event.gbutton.button, false);
+            changeGamepadLabels(event.gbutton.which);
+            setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
             handleAxisMotion(event);
+            changeGamepadLabels(event.gaxis.which);
+            setFocusedController(event.gaxis.which);
             break;
 
         case SDL_EVENT_GAMEPAD_ADDED:
             handleGamepadAdded(event.gdevice.which);
+            changeGamepadLabels(event.gdevice.which);
+            setFocusedController(event.gdevice.which);
             break;
 
         case SDL_EVENT_GAMEPAD_REMOVED:
             handleGamepadRemoved(event.gdevice.which);
+            changeGamepadLabels(NO_CONTROLLER);
             break;
         }
     }
 }
 
+void Gamepad::setFocusedController(SDL_JoystickID which)
+{
+    m_focusedJoystick = which;
+}
+
 void Gamepad::handleAxisMotion(SDL_Event &event)
 {
-
-    
-    switch (event.gaxis.axis)
-    {
-        case SDL_GAMEPAD_AXIS_INVALID:
-        break;
-        
-        case SDL_GAMEPAD_AXIS_LEFTX:
-        m_gamepads[event.gaxis.which].leftx = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-
-        case SDL_GAMEPAD_AXIS_LEFTY:
-        m_gamepads[event.gaxis.which].lefty = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-        
-        case SDL_GAMEPAD_AXIS_RIGHTX:
-        m_gamepads[event.gaxis.which].rightx = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-        
-        case SDL_GAMEPAD_AXIS_RIGHTY:
-        m_gamepads[event.gaxis.which].righty = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-        
-        case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
-        m_gamepads[event.gaxis.which].lt = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-        
-        case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
-        m_gamepads[event.gaxis.which].rt = event.gaxis.value / SDL_MAX_SINT16;
-        break;
-        
-        case SDL_GAMEPAD_AXIS_COUNT:
-        break;
+    if (event.gaxis.axis == SDL_GAMEPAD_AXIS_INVALID || event.gaxis.axis == SDL_GAMEPAD_AXIS_COUNT) {
+        qWarning() << "Invalid axis event ignored";
+        return;
     }
 
+    axisValueChanged(static_cast<SDL_GamepadAxis>(event.gaxis.axis));
+}
 
+void Gamepad::axisValueChanged(SDL_GamepadAxis axis)
+{
+    switch (axis) {
+    case SDL_GAMEPAD_AXIS_LEFTX:
+        Q_EMIT leftXChanged();
+        break;
 
+    case SDL_GAMEPAD_AXIS_LEFTY:
+        Q_EMIT leftYChanged();
+        break;
 
+    case SDL_GAMEPAD_AXIS_RIGHTX:
+        Q_EMIT rightXChanged();
+        break;
 
-    if (event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTY) {
-        axisEmulateDpad(m_gamepads[event.gaxis.which].leftStickVertical, event.gaxis.value);
-        m_gamepads[event.gaxis.which].leftStickVertical = event.gaxis.value;
+    case SDL_GAMEPAD_AXIS_RIGHTY:
+        Q_EMIT rightYChanged();
+        break;
+
+    case SDL_GAMEPAD_AXIS_LEFT_TRIGGER:
+        Q_EMIT leftTriggerChanged();
+        break;
+
+    case SDL_GAMEPAD_AXIS_RIGHT_TRIGGER:
+        Q_EMIT rightTriggerChanged();
+        break;
+
+    default:
+        break;
     }
-
-    
-    else if (event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHTY) {
-        m_gamepads[event.gaxis.which].rightStickVertical = event.gaxis.value;
-        Q_EMIT RStickMagnitudeChanged();
-    }
-
-
-    changeGamepadLabels(event.gbutton.which);
 }
 
 void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
@@ -177,20 +178,12 @@ void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
 
 void Gamepad::handleGamepadAdded(SDL_JoystickID which)
 {
-    if (m_gamepads.count(which) > 0) {
-        qWarning() << "A gamepad was connected while already being connected!";
-        return;
-    }
-
     qDebug() << "New Device Detected! ID:" << which;
 
     SDL_Gamepad *newGamepad = SDL_OpenGamepad(which);
 
     if (newGamepad) {
-        m_gamepads[which].gamepad = newGamepad;
-
         qDebug() << "Gamepad Opened Name:" << SDL_GetGamepadName(newGamepad);
-        changeGamepadLabels(which);
     } else {
         qWarning() << "Could not open gamepad!" << SDL_GetError();
     }
@@ -198,16 +191,10 @@ void Gamepad::handleGamepadAdded(SDL_JoystickID which)
 
 void Gamepad::handleGamepadRemoved(SDL_JoystickID which)
 {
-    auto find_gamepad = m_gamepads.find(which);
-
-    if (find_gamepad != m_gamepads.end()) {
-        if (find_gamepad->second.gamepad) {
-            qDebug() << "Device Removed ID:" << which;
-            SDL_CloseGamepad(find_gamepad->second.gamepad);
-        }
-        m_gamepads.erase(find_gamepad);
+    if (SDL_GetGamepadFromID(which)) {
+        qDebug() << "Device Removed ID:" << which;
+        SDL_CloseGamepad(SDL_GetGamepadFromID(which));
     }
-    changeGamepadLabels(0);
 }
 
 void Gamepad::changeGamepadLabels(SDL_JoystickID which)
@@ -216,10 +203,9 @@ void Gamepad::changeGamepadLabels(SDL_JoystickID which)
     if (which == m_focusedJoystick)
         return;
 
-    m_focusedJoystick = which;
+    SDL_Gamepad *temp = SDL_GetGamepadFromID(m_focusedJoystick);
 
-    if (which) {
-        SDL_Gamepad *temp = m_gamepads[which].gamepad;
+    if (temp) {
         m_labels.m_a = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
         m_labels.m_b = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
         m_labels.m_x = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);

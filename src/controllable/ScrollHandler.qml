@@ -18,7 +18,7 @@ Item {
         interval: Gamepad.pollingRate
         running: root.active 
                 && (root.scrollBar || root.flickable)
-                && (Math.abs(Gamepad.rStickMagnitude) > Gamepad.deadzone)
+                && (Math.abs(Gamepad.rightY) > Gamepad.deadzone)
         repeat: true
         onTriggered: {
 
@@ -28,7 +28,7 @@ Item {
             {
                 const min_pos = 0;
                 const max_pos = 1 - root.scrollBar.size;
-                const new_pos = root.scrollBar.position + (Gamepad.rStickMagnitude * root.sensitivity / 2700000);
+                const new_pos = root.scrollBar.position + (Gamepad.rightY * root.sensitivity / 64);
 
                 root.scrollBar.position = clamp(new_pos, min_pos, max_pos);
             }
@@ -36,7 +36,7 @@ Item {
             {
                 const min_pos = root.flickable.originY;
                 const max_pos = min_pos + root.flickable.contentHeight - root.flickable.height;
-                const new_pos = root.flickable.contentY + (Gamepad.rStickMagnitude * root.sensitivity / 2700);
+                const new_pos = root.flickable.contentY + (Gamepad.rightY * root.sensitivity * 16);
 
                 root.flickable.contentY = clamp(new_pos, min_pos, max_pos);
             }           

@@ -12,13 +12,45 @@ ApplicationWindow {
     visible: true
 
 
-    Gamepad.GamepadPageNavigation {
-        
+    // Gamepad.PageNavigation {
+    //     targetScrollbar: view.ScrollBar.vertical   
+    // }
+
+    // ScrollView {
+    //     id: view
+    //     anchors.fill: parent
+
+    //     ListView {
+    //         model: 200
+    //         delegate: ItemDelegate {
+    //             text: "Item " + index + " " + Gamepad.Gamepad.rightY
+
+    //             required property int index
+    //         }
+    //     }
+    // }
+
+    Gamepad.ScrollHandler {
+        scrollBar: view.ScrollBar.vertical
     }
 
-    StackView {
+
+    ScrollView {
+        id: view
         anchors.fill: parent
+        
 
-        Text {text: "text"}
+        ListView {
+            model: 200
+            delegate: ItemDelegate {
+                text: "Item " + index
+
+                required property int index
+            }
+        }
     }
+
+    
+
+
 }

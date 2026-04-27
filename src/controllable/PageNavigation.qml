@@ -5,10 +5,9 @@ import QtQuick
 import QtQuick.Controls
 
 import io.github.rfrench3.controllable
-// import org.kde.kirigami as Kirigami
 
 /**
- * @brief GamepadPageNavigation - Adds very basic controller support to a page.
+ * @brief PageNavigation - Adds very basic controller support to a page.
  * 
  * This support is applied by emulating tab navigation.
  * - Dpad/LStick up: shift+tab
@@ -25,40 +24,12 @@ Item {
     // When given a scroll bar, the right stick will smoothly scroll through it
     property ScrollBar targetScrollbar: null
 
-    property var targetScrollable: null
-
-    Component.onCompleted: {
-        if (targetScrollable && !targetScrollbar)
-            grabScrollbar(targetScrollable);
-    }
-
-    // NOTE: If scrolling breaks in the future, its probably this
-    // function grabScrollbar(item) {
-    //     if (item instanceof Kirigami.ScrollablePage) {
-
-    //         if (
-    //             item.contentItem
-    //             && item.contentItem.ScrollBar
-    //             && item.contentItem.ScrollBar.vertical
-    //         ) {
-    //             Qt.callLater(() => {root.targetScrollbar = item.contentItem.ScrollBar.vertical;});
-    //         } 
-    //         else
-    //             console.log("Parent scrollbar not found, controller scrolling will not function!");
-    //     }
-    //     else {
-    //         if (item.parent)
-    //             grabScrollbar(item.parent);
-    //         else 
-    //             console.log("Parent Kirigami.ScrollablePage not found, controller scrolling will not function!");
-    //     }
-    // }
     
     Connections {
         target: Gamepad
 
         function keyEvent(button_down, key) {
-            let item = root.targetWindow.activeFocusItem;
+            let item = root.Window.window.activeFocusItem;
             if (button_down == true) {
                 // console.log("button down");
                 Gamepad.sendButtonPressed(item, key);
@@ -69,7 +40,7 @@ Item {
             }
         }
 
-        function mouseEvent(button_down, item = root.targetWindow.activeFocusItem) {
+        function mouseEvent(button_down, item = root.Window.window.activeFocusItem) {
             if (button_down == true) {
                 Gamepad.sendMousePressed(item);
                 // console.log("mouse down");
@@ -89,7 +60,7 @@ Item {
             if (!active)
                 return;
 
-            let item = root.targetWindow.activeFocusItem;
+            let item = root.Window.window.activeFocusItem;
 
             switch (buttonId) {
                 case 0: // A
@@ -110,6 +81,10 @@ Item {
                     itemDown.forceActiveFocus(Qt.TabFocusReason);
                     break;
             }
+        }
+
+        function onRightYChanged() {
+            // console.log(Gamepad.rightY);
         }
     }
 

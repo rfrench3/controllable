@@ -16,7 +16,7 @@ target_sources(controllable
 
 ecm_target_qml_sources(controllable
     SOURCES
-    GamepadPageNavigation.qml
+    PageNavigation.qml
     ScrollHandler.qml
 )
 

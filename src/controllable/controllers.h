@@ -9,10 +9,15 @@
 #include <QString>
 #include <QTimer>
 #include <SDL3/SDL.h>
+#include <cmath>
 #include <cstdint>
 #include <map>
 
 #define POLLING_RATE 16 // ~60FPS
+
+#define NO_CONTROLLER 0
+
+using std::map;
 
 struct ControllerLabels {
     Q_GADGET
@@ -35,6 +40,10 @@ public:
     QString m_S_big; // m_S times three
 };
 
+/*
+ *
+ * If a double is returned for an axis value, it ranges from -1 to 1.
+ */
 class Gamepad : public QObject
 {
     Q_OBJECT
@@ -42,11 +51,9 @@ class Gamepad : public QObject
     QML_SINGLETON
 
     Q_PROPERTY(ControllerLabels labels READ labels NOTIFY labelsChanged)
-    Q_PROPERTY(int16_t rStickMagnitude READ RStickMagnitude NOTIFY RStickMagnitudeChanged)
     Q_PROPERTY(int pollingRate READ getPollingRate CONSTANT)
-    Q_PROPERTY(int16_t deadzone READ getDeadzone CONSTANT)
+    Q_PROPERTY(double deadzone READ getDeadzone CONSTANT)
 
-    // range from 0 to 1
     Q_PROPERTY(double leftX READ getLeftX NOTIFY leftXChanged)
     Q_PROPERTY(double leftY READ getLeftY NOTIFY leftYChanged)
     Q_PROPERTY(double rightX READ getRightX NOTIFY rightXChanged)
@@ -54,98 +61,53 @@ class Gamepad : public QObject
     Q_PROPERTY(double leftTrigger READ getLeftTrigger NOTIFY leftTriggerChanged)
     Q_PROPERTY(double rightTrigger READ getRightTrigger NOTIFY rightTriggerChanged)
 
+    double getAxisValue(SDL_GamepadAxis axis) const;
+
+    // wrapper for the signals of each "get axis"
+    void axisValueChanged(SDL_GamepadAxis axis);
+
+public:
     double getLeftX() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.leftx;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_LEFTX);
     }
     Q_SIGNAL void leftXChanged();
     double getLeftY() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.lefty;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_LEFTY);
     }
     Q_SIGNAL void leftYChanged();
     double getRightX() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.rightx;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_RIGHTX);
     }
     Q_SIGNAL void rightXChanged();
     double getRightY() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.righty;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_RIGHTY);
     }
     Q_SIGNAL void rightYChanged();
     double getLeftTrigger() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.lt;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_LEFT_TRIGGER);
     }
     Q_SIGNAL void leftTriggerChanged();
     double getRightTrigger() const
     {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.rt;
-        }
-        return 0.0;
+        return getAxisValue(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
     }
     Q_SIGNAL void rightTriggerChanged();
-
-    struct GamepadData {
-        SDL_Gamepad *gamepad = nullptr;
-
-        double leftx = 0;
-        double lefty = 0;
-        double rightx = 0;
-        double righty = 0;
-
-        double lt = 0;
-        double rt = 0;
-
-
-
-
-
-
-
-
-        // left stick emulates d-pad inputs,
-        // range is [x < -DEADZONE, |x| < DEADZONE, x > DEADZONE ]
-        int16_t leftStickVertical = 0;
-        // int16_t leftStickHorizontal = 0;
-
-        // while (|x| > DEADZONE, scroll proportionally)
-        int16_t rightStickVertical = 0;
-        // int16_t rightStickHorizontal = 0;
-    };
 
     void pollSDL();
     QTimer *m_timer;
 
     // m_focusedJoystick ensures the glyphs don't re-update on every input from one controller
-    SDL_JoystickID m_focusedJoystick = 0;
-    std::map<SDL_JoystickID, GamepadData> m_gamepads;
+    SDL_JoystickID m_focusedJoystick = NO_CONTROLLER;
 
     void changeGamepadLabels(SDL_JoystickID which);
     QString getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+
+    void setFocusedController(SDL_JoystickID which);
     void handleGamepadAdded(SDL_JoystickID which);
     void handleGamepadRemoved(SDL_JoystickID which);
     void handleAxisMotion(SDL_Event &event);
@@ -153,34 +115,14 @@ class Gamepad : public QObject
 
     ControllerLabels m_labels;
 
-    const int16_t DEADZONE = 12000; // Range: -32768,32768
+    const double DEADZONE = 0.2;
 
 public:
     Gamepad(QObject *parent = nullptr);
 
-
-
-
-
-
-
-
-
-
-
-
     ControllerLabels labels() const
     {
         return m_labels;
-    }
-
-    int16_t RStickMagnitude() const
-    {
-        auto it = m_gamepads.find(m_focusedJoystick);
-        if (it != m_gamepads.end()) {
-            return it->second.rightStickVertical;
-        }
-        return 0; // Return 0 when no gamepad is connected
     }
 
     int getPollingRate() const
@@ -188,7 +130,7 @@ public:
         return POLLING_RATE;
     }
 
-    int16_t getDeadzone() const
+    double getDeadzone() const
     {
         return DEADZONE;
     }
@@ -203,6 +145,4 @@ public:
 
     Q_INVOKABLE void sendMousePressed(QQuickItem *item);
     Q_INVOKABLE void sendMouseReleased(QQuickItem *item);
-
-    Q_SIGNAL void RStickMagnitudeChanged();
 };

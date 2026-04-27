@@ -18,7 +18,6 @@ using namespace Qt::Literals::StringLiterals;
 
 int main(int argc, char *argv[])
 {
-    KIconTheme::initTheme();
     QIcon::setFallbackThemeName("breeze"_L1);
     QApplication app(argc, argv);
 
