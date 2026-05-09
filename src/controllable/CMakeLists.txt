@@ -12,6 +12,8 @@ target_sources(controllable
     PRIVATE
     controllers.cpp
     controllers.h
+    labels.cpp
+    labels.h
 )
 
 ecm_target_qml_sources(controllable

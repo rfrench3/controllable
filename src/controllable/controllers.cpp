@@ -2,72 +2,74 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "controllers.h"
+#include "labels.h"
 #include <KLocalizedString>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QQuickWindow>
+#include <cstdint>
 #include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;
 
-Labels *Labels::m_instance = nullptr;
+// Labels *Labels::m_instance = nullptr;
 
-void Labels::changeLabels(SDL_JoystickID which)
-{
-    // Only change labels when necessary
-    if (which == m_focusedJoystick)
-        return;
-    else
-        m_focusedJoystick = which;
+// void Labels::changeLabels(SDL_JoystickID which)
+// {
+//     // Only change labels when necessary
+//     if (which == m_focusedJoystick)
+//         return;
+//     else
+//         m_focusedJoystick = which;
 
-    SDL_Gamepad *temp = SDL_GetGamepadFromID(which);
+//     SDL_Gamepad *temp = SDL_GetGamepadFromID(which);
 
-    if (temp) {
-        south = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
-        east = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
-        west = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);
-        north = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_NORTH);
-        spacer = u" "_s;
-        spacer_large = u"   "_s;
-    } else {
-        south = u""_s;
-        east = u""_s;
-        west = u""_s;
-        north = u""_s;
-        spacer = u""_s;
-        spacer_large = u""_s;
-    }
+//     if (temp) {
+//         south = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
+//         east = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
+//         west = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);
+//         north = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_NORTH);
+//         spacer = u" "_s;
+//         spacer_large = u"   "_s;
+//     } else {
+//         south = u""_s;
+//         east = u""_s;
+//         west = u""_s;
+//         north = u""_s;
+//         spacer = u""_s;
+//         spacer_large = u""_s;
+//     }
 
-    Q_EMIT labelsChanged();
-}
+//     Q_EMIT labelsChanged();
+// }
 
-QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
-{
-    // Ask SDL what is written on this physical button
-    SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(gamepad, button);
+// QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+// {
+//     // Ask SDL what is written on this physical button
+//     SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(gamepad, button);
 
-    switch (label) {
-    case SDL_GAMEPAD_BUTTON_LABEL_A:
-        return u"(A)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_B:
-        return u"(B)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_X:
-        return u"(X)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_Y:
-        return u"(Y)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-        return u"(✖)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-        return u"(🞇)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-        return u"(🞑)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-        return u"(🛆)"_s;
-    default:
-        return u"(?)"_s; // Unknown
-    }
-}
+//     switch (label) {
+//     case SDL_GAMEPAD_BUTTON_LABEL_A:
+//         return u"(A)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_B:
+//         return u"(B)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_X:
+//         return u"(X)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_Y:
+//         return u"(Y)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
+//         return u"(✖)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
+//         return u"(🞇)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
+//         return u"(🞑)"_s;
+//     case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
+//         return u"(🛆)"_s;
+//     default:
+//         return u"(?)"_s; // Unknown
+//     }
+// }
 
 Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
@@ -166,7 +168,7 @@ void Gamepad::setFocusedController(SDL_JoystickID which)
 
 void Gamepad::handleAxisMotion(SDL_Event &event)
 {
-    if (event.gaxis.axis == SDL_GAMEPAD_AXIS_INVALID || event.gaxis.axis == SDL_GAMEPAD_AXIS_COUNT) {
+    if (event.gaxis.axis == static_cast<Uint8>(SDL_GAMEPAD_AXIS_INVALID) || event.gaxis.axis == SDL_GAMEPAD_AXIS_COUNT) {
         qWarning() << "Invalid axis event ignored";
         return;
     }

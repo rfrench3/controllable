@@ -22,68 +22,6 @@
 
 using std::map;
 
-struct ControllerLabels {
-    Q_GADGET
-    // Expose members as properties to QML
-    Q_PROPERTY(QString a MEMBER m_a CONSTANT)
-    Q_PROPERTY(QString b MEMBER m_b CONSTANT)
-    Q_PROPERTY(QString x MEMBER m_x CONSTANT)
-    Q_PROPERTY(QString y MEMBER m_y CONSTANT)
-    Q_PROPERTY(QString space MEMBER m_S CONSTANT)
-    Q_PROPERTY(QString space_large MEMBER m_S_big CONSTANT)
-
-    // The correct glyphs are initialized by Gamepad::changeGamepadLabels()
-    // The a-b-x-y names here follow the Xbox layout
-    QString m_a;
-    QString m_b;
-    QString m_x;
-    QString m_y;
-    QString m_S;
-    QString m_S_big; // m_S times three
-};
-
-class Labels : public QObject
-{
-    Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
-
-    Q_PROPERTY(QString south MEMBER south NOTIFY labelsChanged)
-    Q_PROPERTY(QString east MEMBER east NOTIFY labelsChanged)
-    Q_PROPERTY(QString west MEMBER west NOTIFY labelsChanged)
-    Q_PROPERTY(QString north MEMBER north NOTIFY labelsChanged)
-    Q_PROPERTY(QString spacer MEMBER spacer NOTIFY labelsChanged)
-    Q_PROPERTY(QString spacer_large MEMBER spacer_large NOTIFY labelsChanged)
-
-    QString south, east, west, north, spacer, spacer_large;
-    QString getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
-    SDL_JoystickID m_focusedJoystick;
-
-    static Labels *m_instance;
-
-public:
-    Labels(QObject *parent = nullptr)
-        : QObject(parent)
-    {
-        m_instance = this;
-        m_focusedJoystick = NO_CONTROLLER;
-    };
-
-    static Labels *instance()
-    {
-        return m_instance;
-    }
-
-    Q_SIGNAL void labelsChanged();
-
-    void changeLabels(SDL_JoystickID which);
-};
-
-inline static Labels *labels()
-{
-    return Labels::instance();
-}
-
 // If a double is returned for an axis value, it ranges from -1 to 1.
 class Gamepad : public QObject
 {
@@ -168,7 +106,6 @@ public:
     Q_INVOKABLE void setPollController(bool windowActiveState);
     Q_SIGNAL void buttonPressed(uint8_t button, bool button_down);
     Q_SIGNAL void gamepadPresentChanged();
-    Q_SIGNAL void labelsChanged();
 
     Q_INVOKABLE void sendButtonPressed(QQuickItem *item, Qt::Key key);
     Q_INVOKABLE void sendButtonReleased(QQuickItem *item, Qt::Key key);
