@@ -5,7 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import io.github.rfrench3.controllable as Gamepad
+import io.github.rfrench3.controllable as GP
 
 ApplicationWindow {
     visible: true
@@ -14,7 +14,7 @@ ApplicationWindow {
         id: bar
         width: parent.width
         TabButton {
-            text: qsTr("Home")
+            text: qsTr("Home") + GP.Labels.south
         }
         TabButton {
             text: qsTr("Discover")
@@ -22,16 +22,17 @@ ApplicationWindow {
     }
 
     Connections {
-        target: Gamepad.Gamepad
+        target: GP.Gamepad
 
         function onButtonPressed(buttonId, button_down) {
-            if (!button_down) return;
+            if (!button_down)
+                return;
 
             if (buttonId == 0) {
-                bar.currentIndex = 0
+                bar.currentIndex = 0;
             }
             if (buttonId == 1) {
-                bar.currentIndex = 1
+                bar.currentIndex = 1;
             }
         }
     }
@@ -41,12 +42,11 @@ ApplicationWindow {
         currentIndex: bar.currentIndex
         Item {
             id: homeTab
-            Gamepad.ScrollHandler {
+            GP.ScrollHandler {
                 scrollBar: view.ScrollBar.vertical
             }
 
             Layout.fillHeight: true
-
 
             ScrollView {
                 id: view
@@ -63,7 +63,7 @@ ApplicationWindow {
         }
         Item {
             id: discoverTab
-            Gamepad.ScrollHandler {
+            GP.ScrollHandler {
                 flickable: flick
             }
 
@@ -73,21 +73,22 @@ ApplicationWindow {
                 contentWidth: rectangle.width
                 contentHeight: rectangle.height
 
-
                 Rectangle {
                     id: rectangle
-                    width: 4000; height: 4000
+                    width: 4000
+                    height: 4000
                     gradient: Gradient {
-                        GradientStop { position: 0.0; color: "lightsteelblue" }
-                        GradientStop { position: 1.0; color: "blue" }
+                        GradientStop {
+                            position: 0.0
+                            color: "lightsteelblue"
+                        }
+                        GradientStop {
+                            position: 1.0
+                            color: "blue"
+                        }
                     }
                 }
-
-
             }
-
         }
     }
-
-
 }

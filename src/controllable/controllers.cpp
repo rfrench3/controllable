@@ -7,8 +7,67 @@
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QQuickWindow>
+#include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;
+
+Labels *Labels::m_instance = nullptr;
+
+void Labels::changeLabels(SDL_JoystickID which)
+{
+    // Only change labels when necessary
+    if (which == m_focusedJoystick)
+        return;
+    else
+        m_focusedJoystick = which;
+
+    SDL_Gamepad *temp = SDL_GetGamepadFromID(which);
+
+    if (temp) {
+        south = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
+        east = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
+        west = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);
+        north = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_NORTH);
+        spacer = u" "_s;
+        spacer_large = u"   "_s;
+    } else {
+        south = u""_s;
+        east = u""_s;
+        west = u""_s;
+        north = u""_s;
+        spacer = u""_s;
+        spacer_large = u""_s;
+    }
+
+    Q_EMIT labelsChanged();
+}
+
+QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
+{
+    // Ask SDL what is written on this physical button
+    SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(gamepad, button);
+
+    switch (label) {
+    case SDL_GAMEPAD_BUTTON_LABEL_A:
+        return u"(A)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_B:
+        return u"(B)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_X:
+        return u"(X)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_Y:
+        return u"(Y)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
+        return u"(✖)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
+        return u"(🞇)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
+        return u"(🞑)"_s;
+    case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
+        return u"(🛆)"_s;
+    default:
+        return u"(?)"_s; // Unknown
+    }
+}
 
 Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
@@ -26,15 +85,9 @@ Gamepad::Gamepad(QObject *parent)
     m_timer->start(POLLING_RATE);
     qDebug() << "Gamepad initialized.";
 
-
-    connect(qGuiApp, 
-        &QGuiApplication::applicationStateChanged, 
-        [this](Qt::ApplicationState state){
-            setPollController(state == Qt::ApplicationActive);
-        }
-    );
-
-    changeGamepadLabels(NO_CONTROLLER);
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, [this](Qt::ApplicationState state) {
+        setPollController(state == Qt::ApplicationActive);
+    });
 }
 
 double Gamepad::getAxisValue(SDL_GamepadAxis axis) const
@@ -78,38 +131,36 @@ void Gamepad::pollSDL()
         switch (event.type) {
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             Q_EMIT buttonPressed(event.gbutton.button, true);
-            changeGamepadLabels(event.gbutton.which);
             setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             Q_EMIT buttonPressed(event.gbutton.button, false);
-            changeGamepadLabels(event.gbutton.which);
             setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
             handleAxisMotion(event);
-            changeGamepadLabels(event.gaxis.which);
             setFocusedController(event.gaxis.which);
             break;
 
         case SDL_EVENT_GAMEPAD_ADDED:
             handleGamepadAdded(event.gdevice.which);
-            changeGamepadLabels(event.gdevice.which);
             setFocusedController(event.gdevice.which);
             break;
 
         case SDL_EVENT_GAMEPAD_REMOVED:
             handleGamepadRemoved(event.gdevice.which);
-            changeGamepadLabels(NO_CONTROLLER);
+            setFocusedController(NO_CONTROLLER);
             break;
         }
     }
 }
 
+// Updates gamepad labels when the focused controller changes
 void Gamepad::setFocusedController(SDL_JoystickID which)
 {
+    labels()->changeLabels(which);
     m_focusedJoystick = which;
 }
 
@@ -194,60 +245,6 @@ void Gamepad::handleGamepadRemoved(SDL_JoystickID which)
     if (SDL_GetGamepadFromID(which)) {
         qDebug() << "Device Removed ID:" << which;
         SDL_CloseGamepad(SDL_GetGamepadFromID(which));
-    }
-}
-
-void Gamepad::changeGamepadLabels(SDL_JoystickID which)
-{
-    // Only change labels when necessary
-    if (which == m_focusedJoystick)
-        return;
-
-    SDL_Gamepad *temp = SDL_GetGamepadFromID(m_focusedJoystick);
-
-    if (temp) {
-        m_labels.m_a = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
-        m_labels.m_b = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
-        m_labels.m_x = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);
-        m_labels.m_y = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_NORTH);
-        m_labels.m_S = u" "_s;
-        m_labels.m_S_big = m_labels.m_S + m_labels.m_S + m_labels.m_S;
-    } else {
-        m_labels.m_a = u""_s;
-        m_labels.m_b = u""_s;
-        m_labels.m_x = u""_s;
-        m_labels.m_y = u""_s;
-        m_labels.m_S = u""_s;
-        m_labels.m_S_big = u""_s;
-    }
-
-    Q_EMIT labelsChanged();
-}
-
-QString Gamepad::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
-{
-    // Ask SDL what is written on this physical button
-    SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(gamepad, button);
-
-    switch (label) {
-    case SDL_GAMEPAD_BUTTON_LABEL_A:
-        return u"(A)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_B:
-        return u"(B)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_X:
-        return u"(X)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_Y:
-        return u"(Y)"_s;
-    case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-        return i18n("(Cross)");
-    case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-        return i18n("(Circle)");
-    case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-        return i18n("(Square)");
-    case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-        return i18n("(Triangle)");
-    default:
-        return u"(?)"_s; // Unknown
     }
 }
 

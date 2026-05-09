@@ -17,6 +17,8 @@ find_package(ECM ${KF6_MIN_VERSION} REQUIRED NO_MODULE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(FeatureSummary)
 
 include(KDEInstallDirs)
@@ -25,20 +27,20 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMFindQmlModule)
 include(ECMQmlModule)
 
-find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS 
-    Core 
-    Gui 
-    Qml 
-    Widgets 
-    QuickControls2 
+find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS
+    Core
+    Gui
+    Qml
+    Widgets
+    QuickControls2
     Test
 )
 
-find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS 
-    Kirigami 
-    CoreAddons 
-    Config 
-    I18n 
+find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
+    Kirigami
+    CoreAddons
+    Config
+    I18n
     IconThemes
 )
 
@@ -57,4 +59,3 @@ feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAG
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES src/*.cpp src/*.h)
 kde_clang_format(${ALL_CLANG_FORMAT_SOURCE_FILES})
 kde_configure_git_pre_commit_hook(CHECKS CLANG_FORMAT)
-

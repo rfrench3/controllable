@@ -9,9 +9,12 @@
 #include <QString>
 #include <QTimer>
 #include <SDL3/SDL.h>
-#include <cmath>
 #include <cstdint>
 #include <map>
+#include <qobject.h>
+#include <qobjectdefs.h>
+#include <qqmlintegration.h>
+#include <qtmetamacros.h>
 
 #define POLLING_RATE 16 // ~60FPS
 
@@ -29,7 +32,6 @@ struct ControllerLabels {
     Q_PROPERTY(QString space MEMBER m_S CONSTANT)
     Q_PROPERTY(QString space_large MEMBER m_S_big CONSTANT)
 
-public:
     // The correct glyphs are initialized by Gamepad::changeGamepadLabels()
     // The a-b-x-y names here follow the Xbox layout
     QString m_a;
@@ -40,17 +42,55 @@ public:
     QString m_S_big; // m_S times three
 };
 
-/*
- *
- * If a double is returned for an axis value, it ranges from -1 to 1.
- */
+class Labels : public QObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    QML_SINGLETON
+
+    Q_PROPERTY(QString south MEMBER south NOTIFY labelsChanged)
+    Q_PROPERTY(QString east MEMBER east NOTIFY labelsChanged)
+    Q_PROPERTY(QString west MEMBER west NOTIFY labelsChanged)
+    Q_PROPERTY(QString north MEMBER north NOTIFY labelsChanged)
+    Q_PROPERTY(QString spacer MEMBER spacer NOTIFY labelsChanged)
+    Q_PROPERTY(QString spacer_large MEMBER spacer_large NOTIFY labelsChanged)
+
+    QString south, east, west, north, spacer, spacer_large;
+    QString getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
+    SDL_JoystickID m_focusedJoystick;
+
+    static Labels *m_instance;
+
+public:
+    Labels(QObject *parent = nullptr)
+        : QObject(parent)
+    {
+        m_instance = this;
+        m_focusedJoystick = NO_CONTROLLER;
+    };
+
+    static Labels *instance()
+    {
+        return m_instance;
+    }
+
+    Q_SIGNAL void labelsChanged();
+
+    void changeLabels(SDL_JoystickID which);
+};
+
+inline static Labels *labels()
+{
+    return Labels::instance();
+}
+
+// If a double is returned for an axis value, it ranges from -1 to 1.
 class Gamepad : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
 
-    Q_PROPERTY(ControllerLabels labels READ labels NOTIFY labelsChanged)
     Q_PROPERTY(int pollingRate READ getPollingRate CONSTANT)
     Q_PROPERTY(double deadzone READ getDeadzone CONSTANT)
 
@@ -104,26 +144,16 @@ public:
     // m_focusedJoystick ensures the glyphs don't re-update on every input from one controller
     SDL_JoystickID m_focusedJoystick = NO_CONTROLLER;
 
-    void changeGamepadLabels(SDL_JoystickID which);
-    QString getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
-
     void setFocusedController(SDL_JoystickID which);
     void handleGamepadAdded(SDL_JoystickID which);
     void handleGamepadRemoved(SDL_JoystickID which);
     void handleAxisMotion(SDL_Event &event);
     void axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow);
 
-    ControllerLabels m_labels;
-
     const double DEADZONE = 0.2;
 
 public:
     Gamepad(QObject *parent = nullptr);
-
-    ControllerLabels labels() const
-    {
-        return m_labels;
-    }
 
     int getPollingRate() const
     {
