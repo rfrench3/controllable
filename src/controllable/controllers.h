@@ -62,6 +62,9 @@ class Gamepad : public QObject
     void pollSDL();
     QTimer *m_timer;
 
+    // used for left stick DPad emulation
+    int16_t leftY_prev;
+
     // axis value functions
 public:
     double getLeftX() const

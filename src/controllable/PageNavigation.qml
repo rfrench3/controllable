@@ -21,8 +21,10 @@ Item {
 
     property bool active: visible
 
+    // targetScrollbar is an Item cast to ScrollBar to avoid linter issues of "QQuickScrollBar is not ScrollBar"
+
     // When given a scroll bar, the right stick will smoothly scroll through it
-    property ScrollBar targetScrollbar: null
+    property Item targetScrollbar: null as ScrollBar
 
     Connections {
         target: Gamepad
@@ -82,7 +84,7 @@ Item {
     }
 
     ScrollHandler {
-        scrollBar: root.targetScrollbar
+        target: root.targetScrollbar
         active: root.active
     }
 
@@ -108,8 +110,8 @@ Item {
             next = next.nextItemInFocusChain(forward);
         }
 
-        console.log("Next item in focus scope not found after 512 tries, aborting.");
+        console.log("Next item in focus scope not found after 512 tries, returning original item.");
 
-        return null;
+        return item;
     }
 }

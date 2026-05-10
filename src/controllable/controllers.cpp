@@ -115,6 +115,8 @@ void Gamepad::axisValueChanged(SDL_GamepadAxis axis)
         break;
 
     case SDL_GAMEPAD_AXIS_LEFTY:
+        axisEmulateDpad(leftY_prev, getLeftY());
+        leftY_prev = getLeftY();
         Q_EMIT leftYChanged();
         break;
 
@@ -160,26 +162,26 @@ void Gamepad::handleGamepadRemoved(SDL_JoystickID which)
     }
 }
 
-// void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
-// {
-//     // If the state relative to the controller deadzone has changed, emulate the appropriate Dpad input
+void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
+{
+    // If the state relative to the controller deadzone has changed, emulate the appropriate Dpad input
 
-//     // x < -DEADZONE
-//     if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
-//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
-//     }
-//     if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
-//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
-//     }
+    // x < -DEADZONE
+    if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+    }
+    if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+    }
 
-//     // x > DEADZONE
-//     if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
-//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
-//     }
-//     if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
-//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
-//     }
-// }
+    // x > DEADZONE
+    if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+    }
+    if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
+    }
+}
 
 namespace InputEmulator
 {

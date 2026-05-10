@@ -48,7 +48,7 @@ ApplicationWindow {
         Item {
             id: homeTab
             GP.ScrollHandler {
-                scrollBar: view.ScrollBar.vertical
+                target: view.ScrollBar.vertical
             }
 
             Layout.fillHeight: true
@@ -69,7 +69,7 @@ ApplicationWindow {
         Item {
             id: discoverTab
             GP.ScrollHandler {
-                flickable: flick
+                target: flick
             }
 
             Flickable {
@@ -80,6 +80,7 @@ ApplicationWindow {
 
                 Rectangle {
                     id: rectangle
+                    anchors.fill: parent
                     width: 2000
                     height: 2000
                     gradient: Gradient {
@@ -92,6 +93,11 @@ ApplicationWindow {
                             color: "blue"
                         }
                     }
+                }
+
+                Text {
+                    anchors.fill: parent
+                    text: "This text shows that horizontal movement functions properly!"
                 }
             }
         }
