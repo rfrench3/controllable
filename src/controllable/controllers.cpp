@@ -8,68 +8,11 @@
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QQuickWindow>
+#include <SDL3/SDL_gamepad.h>
 #include <cstdint>
 #include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;
-
-// Labels *Labels::m_instance = nullptr;
-
-// void Labels::changeLabels(SDL_JoystickID which)
-// {
-//     // Only change labels when necessary
-//     if (which == m_focusedJoystick)
-//         return;
-//     else
-//         m_focusedJoystick = which;
-
-//     SDL_Gamepad *temp = SDL_GetGamepadFromID(which);
-
-//     if (temp) {
-//         south = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_SOUTH);
-//         east = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_EAST);
-//         west = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_WEST);
-//         north = getLabelForButton(temp, SDL_GAMEPAD_BUTTON_NORTH);
-//         spacer = u" "_s;
-//         spacer_large = u"   "_s;
-//     } else {
-//         south = u""_s;
-//         east = u""_s;
-//         west = u""_s;
-//         north = u""_s;
-//         spacer = u""_s;
-//         spacer_large = u""_s;
-//     }
-
-//     Q_EMIT labelsChanged();
-// }
-
-// QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
-// {
-//     // Ask SDL what is written on this physical button
-//     SDL_GamepadButtonLabel label = SDL_GetGamepadButtonLabel(gamepad, button);
-
-//     switch (label) {
-//     case SDL_GAMEPAD_BUTTON_LABEL_A:
-//         return u"(A)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_B:
-//         return u"(B)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_X:
-//         return u"(X)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_Y:
-//         return u"(Y)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-//         return u"(✖)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-//         return u"(🞇)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-//         return u"(🞑)"_s;
-//     case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-//         return u"(🛆)"_s;
-//     default:
-//         return u"(?)"_s; // Unknown
-//     }
-// }
 
 Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
@@ -132,17 +75,17 @@ void Gamepad::pollSDL()
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
-            Q_EMIT buttonPressed(event.gbutton.button, true);
+            Q_EMIT buttonEvent(event.gbutton.button, true);
             setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
-            Q_EMIT buttonPressed(event.gbutton.button, false);
+            Q_EMIT buttonEvent(event.gbutton.button, false);
             setFocusedController(event.gbutton.which);
             break;
 
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-            handleAxisMotion(event);
+            axisValueChanged(static_cast<SDL_GamepadAxis>(event.gaxis.axis));
             setFocusedController(event.gaxis.which);
             break;
 
@@ -162,18 +105,9 @@ void Gamepad::pollSDL()
 // Updates gamepad labels when the focused controller changes
 void Gamepad::setFocusedController(SDL_JoystickID which)
 {
-    labels()->changeLabels(which);
+    if (labels())
+        labels()->changeLabels(which);
     m_focusedJoystick = which;
-}
-
-void Gamepad::handleAxisMotion(SDL_Event &event)
-{
-    if (event.gaxis.axis == static_cast<Uint8>(SDL_GAMEPAD_AXIS_INVALID) || event.gaxis.axis == SDL_GAMEPAD_AXIS_COUNT) {
-        qWarning() << "Invalid axis event ignored";
-        return;
-    }
-
-    axisValueChanged(static_cast<SDL_GamepadAxis>(event.gaxis.axis));
 }
 
 void Gamepad::axisValueChanged(SDL_GamepadAxis axis)
@@ -214,18 +148,18 @@ void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
 
     // x < -DEADZONE
     if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
-        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
     }
     if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
-        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
     }
 
     // x > DEADZONE
     if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
-        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
     }
     if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
-        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
+        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
     }
 }
 
@@ -250,13 +184,15 @@ void Gamepad::handleGamepadRemoved(SDL_JoystickID which)
     }
 }
 
-void Gamepad::sendButtonPressed(QQuickItem *item, Qt::Key key)
+namespace InputEmulator
+{
+void sendButtonPressed(QQuickItem *item, Qt::Key key)
 {
     QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier, QString(), false, 1);
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
-void Gamepad::sendButtonReleased(QQuickItem *item, Qt::Key key)
+void sendButtonReleased(QQuickItem *item, Qt::Key key)
 {
     if (key == Qt::Key::Key_Tab || key == Qt::Key::Key_Up || key == Qt::Key::Key_Down)
         return;
@@ -264,7 +200,7 @@ void Gamepad::sendButtonReleased(QQuickItem *item, Qt::Key key)
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
-void Gamepad::sendMousePressed(QQuickItem *item)
+void sendMousePressed(QQuickItem *item)
 {
     qreal pos_x = item->x();
     qreal pos_y = item->y();
@@ -275,7 +211,7 @@ void Gamepad::sendMousePressed(QQuickItem *item)
     QCoreApplication::sendEvent(item, &event);
 }
 
-void Gamepad::sendMouseReleased(QQuickItem *item)
+void sendMouseReleased(QQuickItem *item)
 {
     qreal pos_x = item->x();
     qreal pos_y = item->y();
@@ -284,4 +220,5 @@ void Gamepad::sendMouseReleased(QQuickItem *item)
     QMouseEvent event =
         QMouseEvent(QEvent::MouseButtonRelease, QPointF(), point, Qt::MouseButton::LeftButton, Qt::MouseButton::NoButton, Qt::KeyboardModifier::NoModifier);
     QCoreApplication::sendEvent(item, &event);
+}
 }

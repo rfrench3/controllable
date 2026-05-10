@@ -9,6 +9,8 @@
 #include <QString>
 #include <QTimer>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_oldnames.h>
 #include <cstdint>
 #include <map>
 #include <qobject.h>
@@ -21,6 +23,18 @@
 #define NO_CONTROLLER 0
 
 using std::map;
+
+// Emulate keyboard and mouse inputs
+namespace InputEmulator
+{
+
+void sendButtonPressed(QQuickItem *item, Qt::Key key);
+void sendButtonReleased(QQuickItem *item, Qt::Key key);
+
+void sendMousePressed(QQuickItem *item);
+void sendMouseReleased(QQuickItem *item);
+
+};
 
 // If a double is returned for an axis value, it ranges from -1 to 1.
 class Gamepad : public QObject
@@ -43,7 +57,12 @@ class Gamepad : public QObject
 
     // wrapper for the signals of each "get axis"
     void axisValueChanged(SDL_GamepadAxis axis);
+    void setPollController(bool windowActiveState);
 
+    void pollSDL();
+    QTimer *m_timer;
+
+    // axis value functions
 public:
     double getLeftX() const
     {
@@ -76,22 +95,23 @@ public:
     }
     Q_SIGNAL void rightTriggerChanged();
 
-    void pollSDL();
-    QTimer *m_timer;
+public:
+    Gamepad(QObject *parent = nullptr);
 
-    // m_focusedJoystick ensures the glyphs don't re-update on every input from one controller
+    ~Gamepad()
+    {
+        SDL_Quit();
+    }
+
+    // keeps track of the controller to read axis values from
     SDL_JoystickID m_focusedJoystick = NO_CONTROLLER;
 
     void setFocusedController(SDL_JoystickID which);
     void handleGamepadAdded(SDL_JoystickID which);
     void handleGamepadRemoved(SDL_JoystickID which);
-    void handleAxisMotion(SDL_Event &event);
     void axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow);
 
     const double DEADZONE = 0.2;
-
-public:
-    Gamepad(QObject *parent = nullptr);
 
     int getPollingRate() const
     {
@@ -103,13 +123,23 @@ public:
         return DEADZONE;
     }
 
-    Q_INVOKABLE void setPollController(bool windowActiveState);
-    Q_SIGNAL void buttonPressed(uint8_t button, bool button_down);
-    Q_SIGNAL void gamepadPresentChanged();
+    Q_SIGNAL void buttonEvent(uint8_t button, bool pressed);
 
-    Q_INVOKABLE void sendButtonPressed(QQuickItem *item, Qt::Key key);
-    Q_INVOKABLE void sendButtonReleased(QQuickItem *item, Qt::Key key);
+    Q_INVOKABLE void sendButtonPressed(QQuickItem *item, Qt::Key key)
+    {
+        InputEmulator::sendButtonPressed(item, key);
+    };
+    Q_INVOKABLE void sendButtonReleased(QQuickItem *item, Qt::Key key)
+    {
+        InputEmulator::sendButtonReleased(item, key);
+    };
 
-    Q_INVOKABLE void sendMousePressed(QQuickItem *item);
-    Q_INVOKABLE void sendMouseReleased(QQuickItem *item);
+    Q_INVOKABLE void sendMousePressed(QQuickItem *item)
+    {
+        InputEmulator::sendMousePressed(item);
+    };
+    Q_INVOKABLE void sendMouseReleased(QQuickItem *item)
+    {
+        InputEmulator::sendMouseReleased(item);
+    };
 };

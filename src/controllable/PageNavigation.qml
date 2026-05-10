@@ -8,12 +8,12 @@ import io.github.rfrench3.controllable
 
 /**
  * @brief PageNavigation - Adds very basic controller support to a page.
- * 
+ *
  * This support is applied by emulating tab navigation.
  * - Dpad/LStick up: shift+tab
  * - Dpad/Lstick down: tab
  * - Xbox A (or equivalent): select highlighted element
- * 
+ *
  * @note This is disabled when the global drawer is opened
  */
 Item {
@@ -24,7 +24,6 @@ Item {
     // When given a scroll bar, the right stick will smoothly scroll through it
     property ScrollBar targetScrollbar: null
 
-    
     Connections {
         target: Gamepad
 
@@ -33,8 +32,7 @@ Item {
             if (button_down == true) {
                 // console.log("button down");
                 Gamepad.sendButtonPressed(item, key);
-            }
-            else {
+            } else {
                 // console.log("button up");
                 Gamepad.sendButtonReleased(item, key);
             }
@@ -44,52 +42,47 @@ Item {
             if (button_down == true) {
                 Gamepad.sendMousePressed(item);
                 // console.log("mouse down");
-            }
-            else {
+            } else {
                 Gamepad.sendMouseReleased(item);
                 // console.log("mouse up");
             }
         }
 
         /**
-         * @brief onButtonPressed - Reimplement this separately from GamepadPageNavigation for custom controller navigation.
+         * @brief onButtonEvent - Reimplement this separately from PageNavigation for custom controller navigation.
          * @param buttonId - SDL3 mapping for controller buttons.
-         * @param button_down - true is button is being pressed, false if button is being released.
+         * @param pressed - true is button is being pressed, false if button is being released.
          */
-        function onButtonPressed(buttonId, button_down) {
-            if (!active)
+        function onButtonEvent(buttonId, pressed) {
+            if (!root.active)
                 return;
 
             let item = root.Window.window.activeFocusItem;
 
             switch (buttonId) {
-                case 0: // A
-                    mouseEvent(button_down);
-                    break;
-                
-                case 11: // Dpad Up
-                    if (!button_down) break;
-
-                    let itemUp = item.nextItemInFocusChain(false);
-                    itemUp.forceActiveFocus(Qt.TabFocusReason);
+            case 0: // A
+                mouseEvent(pressed);
+                break;
+            case 11: // Dpad Up
+                if (!pressed)
                     break;
 
-                case 12: // Dpad Down
-                    if (!button_down) break;
-
-                    let itemDown = item.nextItemInFocusChain(true);
-                    itemDown.forceActiveFocus(Qt.TabFocusReason);
+                let itemUp = item.nextItemInFocusChain(false);
+                itemUp.forceActiveFocus(Qt.TabFocusReason);
+                break;
+            case 12: // Dpad Down
+                if (!pressed)
                     break;
+
+                let itemDown = item.nextItemInFocusChain(true);
+                itemDown.forceActiveFocus(Qt.TabFocusReason);
+                break;
             }
-        }
-
-        function onRightYChanged() {
-            // console.log(Gamepad.rightY);
         }
     }
 
     ScrollHandler {
-        scrollBar: root.targetScrollbar 
+        scrollBar: root.targetScrollbar
         active: root.active
     }
 }

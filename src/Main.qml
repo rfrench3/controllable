@@ -14,25 +14,30 @@ ApplicationWindow {
         id: bar
         width: parent.width
         TabButton {
-            text: qsTr("Home") + GP.Labels.south
+            text: "ScrollBar"
         }
         TabButton {
-            text: qsTr("Discover")
+            text: "Flickable"
+        }
+        TabButton {
+            text: "Page Nav"
         }
     }
 
     Connections {
         target: GP.Gamepad
 
-        function onButtonPressed(buttonId, button_down) {
-            if (!button_down)
+        function onButtonEvent(buttonId, pressed) {
+            if (!pressed)
                 return;
 
-            if (buttonId == 0) {
-                bar.currentIndex = 0;
-            }
-            if (buttonId == 1) {
-                bar.currentIndex = 1;
+            switch (buttonId) {
+            case 9: // LB
+                bar.decrementCurrentIndex();
+                break;
+            case 10: // RB
+                bar.incrementCurrentIndex();
+                break;
             }
         }
     }
@@ -69,14 +74,14 @@ ApplicationWindow {
 
             Flickable {
                 id: flick
-
+                anchors.fill: parent
                 contentWidth: rectangle.width
                 contentHeight: rectangle.height
 
                 Rectangle {
                     id: rectangle
-                    width: 4000
-                    height: 4000
+                    width: 2000
+                    height: 2000
                     gradient: Gradient {
                         GradientStop {
                             position: 0.0
@@ -86,6 +91,35 @@ ApplicationWindow {
                             position: 1.0
                             color: "blue"
                         }
+                    }
+                }
+            }
+        }
+        Item {
+            id: tabThree
+            GP.PageNavigation {
+                targetScrollbar: viewt.ScrollBar.vertical
+            }
+
+            Layout.fillHeight: true
+
+            ScrollView {
+                id: viewt
+                anchors.fill: parent
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    Button {
+                        text: "button1"
+                    }
+                    Button {
+                        text: "button2"
+                    }
+                    Label {
+                        text: "text label"
+                    }
+                    Button {
+                        text: "button3"
                     }
                 }
             }
