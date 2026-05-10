@@ -67,14 +67,14 @@ Item {
                 if (!pressed)
                     break;
 
-                let itemUp = item.nextItemInFocusChain(false);
+                let itemUp = root.__nextItemInScope(item, false);
                 itemUp.forceActiveFocus(Qt.TabFocusReason);
                 break;
             case 12: // Dpad Down
                 if (!pressed)
                     break;
 
-                let itemDown = item.nextItemInFocusChain(true);
+                let itemDown = root.__nextItemInScope(item, true);
                 itemDown.forceActiveFocus(Qt.TabFocusReason);
                 break;
             }
@@ -84,5 +84,32 @@ Item {
     ScrollHandler {
         scrollBar: root.targetScrollbar
         active: root.active
+    }
+
+    function __descendantOfParent(item) {
+        let cursor = item;
+        while (cursor) {
+            if (cursor === root.parent)
+                return true;
+            cursor = cursor.parent;
+        }
+        return false;
+    }
+
+    function __nextItemInScope(item, forward) {
+        if (!item)
+            return null;
+
+        let next = item.nextItemInFocusChain(forward);
+
+        for (let i = 0; i < 512; i++) {
+            if (__descendantOfParent(next))
+                return next;
+            next = next.nextItemInFocusChain(forward);
+        }
+
+        console.log("Next item in focus scope not found after 512 tries, aborting.");
+
+        return null;
     }
 }

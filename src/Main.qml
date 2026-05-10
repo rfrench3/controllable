@@ -105,7 +105,9 @@ ApplicationWindow {
 
             ScrollView {
                 id: viewt
-                anchors.fill: parent
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -116,7 +118,7 @@ ApplicationWindow {
                         text: "button2"
                     }
                     Label {
-                        text: "text label"
+                        text: "text label " + GP.Labels.south
                     }
                     Button {
                         text: "button3"

@@ -3,16 +3,13 @@
 
 #include "controllers.h"
 #include "labels.h"
-#include <KLocalizedString>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <QQuickWindow>
 #include <SDL3/SDL_gamepad.h>
-#include <cstdint>
 #include <qcoreapplication.h>
-
-using namespace Qt::Literals::StringLiterals;
+#include <qguiapplication.h>
 
 Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
@@ -142,27 +139,6 @@ void Gamepad::axisValueChanged(SDL_GamepadAxis axis)
     }
 }
 
-void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
-{
-    // If the state relative to the controller deadzone has changed, emulate the appropriate Dpad input
-
-    // x < -DEADZONE
-    if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
-        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
-    }
-    if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
-        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
-    }
-
-    // x > DEADZONE
-    if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
-        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
-    }
-    if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
-        Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
-    }
-}
-
 void Gamepad::handleGamepadAdded(SDL_JoystickID which)
 {
     qDebug() << "New Device Detected! ID:" << which;
@@ -184,19 +160,38 @@ void Gamepad::handleGamepadRemoved(SDL_JoystickID which)
     }
 }
 
+// void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
+// {
+//     // If the state relative to the controller deadzone has changed, emulate the appropriate Dpad input
+
+//     // x < -DEADZONE
+//     if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
+//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+//     }
+//     if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
+//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+//     }
+
+//     // x > DEADZONE
+//     if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
+//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+//     }
+//     if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
+//         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
+//     }
+// }
+
 namespace InputEmulator
 {
 void sendButtonPressed(QQuickItem *item, Qt::Key key)
 {
-    QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier, QString(), false, 1);
+    QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier);
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
 void sendButtonReleased(QQuickItem *item, Qt::Key key)
 {
-    if (key == Qt::Key::Key_Tab || key == Qt::Key::Key_Up || key == Qt::Key::Key_Down)
-        return;
-    QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier, QString(), false, 1);
+    QKeyEvent keyEvent(QEvent::KeyRelease, key, Qt::NoModifier);
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
