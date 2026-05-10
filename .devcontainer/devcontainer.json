@@ -1,46 +1,47 @@
 {
-    "name": "Qt/KDE devcontainer",
-    "build": {
-        "dockerfile": "Dockerfile"
+  "name": "Qt/KDE devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile",
+  },
+  "remoteUser": "user",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "cmake.configureOnOpen": true,
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "C_Cpp.default.includePath": [
+          "${workspaceFolder}/**",
+          "/usr/include/qt6",
+          "/usr/include/qt6/**",
+        ],
+        "C_Cpp.default.defines": [],
+        "C_Cpp.default.compilerPath": "/usr/bin/clang",
+        "C_Cpp.default.cStandard": "c17",
+        "C_Cpp.default.cppStandard": "c++17",
+        "C_Cpp.default.intelliSenseMode": "linux-clang-x64",
+        "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      },
+      "extensions": [
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cmake-tools",
+        "theqtcompany.qt-cpp",
+        "theqtcompany.qt-core",
+        "theqtcompany.qt-qml",
+      ],
     },
-    "remoteUser": "vscode",
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "cmake.configureOnOpen": true,
-                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-                "C_Cpp.default.includePath": [
-                    "${workspaceFolder}/**",
-                    "/usr/include/qt6",
-                    "/usr/include/qt6/**"
-                ],
-                "C_Cpp.default.defines": [],
-                "C_Cpp.default.compilerPath": "/usr/bin/clang",
-                "C_Cpp.default.cStandard": "c17",
-                "C_Cpp.default.cppStandard": "c++17",
-                "C_Cpp.default.intelliSenseMode": "linux-clang-x64",
-                "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"
-            },
-            "extensions": [
-                "ms-vscode.cpptools-extension-pack",
-                "ms-vscode.cmake-tools",
-                "theqtcompany.qt-cpp",
-                "theqtcompany.qt-core",
-                "theqtcompany.qt-qml"
-            ]
-        }
-    },
+  },
 
-    "containerEnv": {
-        "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
-        "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
-        "XDG_SESSION_TYPE": "${localEnv:XDG_SESSION_TYPE}",
-        "QML_IMPORT_PATH": "/workspaces/controllable/build/bin"
-    },
-    "privileged": true,
-    "mounts": [
-        "source=${localEnv:XDG_RUNTIME_DIR},target=${localEnv:XDG_RUNTIME_DIR},type=bind,consistency=cached",
-        "source=/usr/share/ublue-os/image-info.json,target=/run/host/usr/share/ublue-os/image-info.json,type=bind,consistency=cached",
-        "source=/dev/input,target=/dev/input,type=bind"
-    ]
+  "containerEnv": {
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+    "XDG_SESSION_TYPE": "${localEnv:XDG_SESSION_TYPE}",
+    "QML_IMPORT_PATH": "/workspaces/controllable/build/bin",
+    "QML2_IMPORT_PATH": "/workspaces/controllable/build/bin",
+    "XDG_CURRENT_DESKTOP": "KDE",
+  },
+  "privileged": true,
+  "mounts": [
+    "source=${localEnv:XDG_RUNTIME_DIR},target=${localEnv:XDG_RUNTIME_DIR},type=bind,consistency=cached",
+    "source=/dev/input,target=/dev/input,type=bind",
+  ],
 }

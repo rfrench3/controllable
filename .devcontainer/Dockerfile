@@ -16,17 +16,14 @@ RUN pacman -Syu --noconfirm \
     kirigami-addons \
     qqc2-desktop-style \
     plasma-workspace \
-    just 
+    just
 
-# Create vscode user with sudo access
-RUN groupadd --gid 1000 vscode \
-    && useradd --uid 1000 --gid 1000 -m -s /bin/bash vscode \
-    && echo 'vscode ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/vscode \
-    && chmod 0440 /etc/sudoers.d/vscode
+# Create user with sudo access
+RUN groupadd --gid 1000 user \
+    && useradd --uid 1000 --gid 1000 -m -s /bin/bash user \
+    && echo 'user ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/user \
+    && chmod 0440 /etc/sudoers.d/user
 
-# Give vscode access to the input group (for testing controllers)
+# Give user access to the input group (for testing controllers)
 RUN groupadd -f input \
-    && usermod -a -G input vscode
-
-## Let breeze work while testing (not necessary)
-ENV XDG_CURRENT_DESKTOP=KDE
+    && usermod -a -G input user
