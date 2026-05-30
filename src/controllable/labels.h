@@ -5,7 +5,6 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include <QQuickItem>
 #include <QString>
 #include <QTimer>
 #include <SDL3/SDL.h>

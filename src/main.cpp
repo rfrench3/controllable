@@ -9,11 +9,6 @@
 #include <QQuickStyle>
 #include <QIcon>
 
-#include <KAboutData>
-#include <KIconTheme>
-#include <KLocalizedQmlContext>
-#include <KLocalizedString>
-
 using namespace Qt::Literals::StringLiterals;
 
 int main(int argc, char *argv[])

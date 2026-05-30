@@ -27,7 +27,7 @@ Item {
 
     Timer {
         interval: Gamepad.pollingRate
-        running: root.active && root.__valid && ((Math.abs(Gamepad.rightY) > Gamepad.deadzone) || (Math.abs(Gamepad.rightX) > Gamepad.deadzone))
+        running: root.active && ((Math.abs(Gamepad.rightY) > Gamepad.deadzone) || (Math.abs(Gamepad.rightX) > Gamepad.deadzone))
         repeat: true
         onTriggered: {
             const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
@@ -61,13 +61,15 @@ Item {
 
                     root.target.contentX = clamp(new_pos, min_pos, max_pos);
                 }
+            } else {
+                Gamepad.sendScrollEvent(root.target, Gamepad.rightY * 256);
             }
         }
     }
 
     Component.onCompleted: {
         if (!root.__valid)
-            console.log("Invalid data passed to target, scrollHandler will not function.");
+            console.log("Target is not a Scrollbar or flickable, falling back to unreliable trackpad emulation.");
     }
 
     function scrollDistance() {

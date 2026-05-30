@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="addon">
+  <!--Created with jdAppStreamEdit 9.2-->
+  <id>io.github.rfrench3.controllable</id>
+  <name>Controllable</name>
+  <summary>QML module for controller support</summary>
+  <developer id="io.github.rfrench3">
+    <name>Robert French</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <description>
+    <p>A QML module that provides support for controllers.</p>
+  </description>
+  <releases>
+    <release version="v0.0.1" date="2026-05-12" type="snapshot">
+      <description>
+        <p>Initial rpm build</p>
+      </description>
+    </release>
+  </releases>
+  <supports>
+    <control>gamepad</control>
+  </supports>
+  <content_rating type="oars-1.1"/>
+  <keywords>
+    <keyword>Gamepad</keyword>
+    <keyword>QML</keyword>
+  </keywords>
+</component>

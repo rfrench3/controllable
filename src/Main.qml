@@ -22,6 +22,9 @@ ApplicationWindow {
         TabButton {
             text: "Page Nav"
         }
+        TabButton {
+            text: "Scrollwheel"
+        }
     }
 
     Connections {
@@ -128,6 +131,43 @@ ApplicationWindow {
                     }
                     Button {
                         text: "button3"
+                    }
+                }
+            }
+        }
+        Item {
+            GP.ScrollHandler {
+                // TODO: make it accept a json object to represent a QPoint, or make it create that when the target isnt a flickable or scrollbar.
+                //
+                // This works as long as the center of the target item is visible, but fails once the item's center is not visible (outside the window, hidden behind a different item, etc)
+                target: randbutton
+            }
+
+            Layout.fillHeight: true
+
+            ScrollView {
+                id: viewte
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.bottom: parent.bottom
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    Button {
+                        text: "button1"
+                    }
+                    Button {
+                        id: randbutton
+                        text: "button2"
+                    }
+                    Label {
+                        text: "text label " + GP.Labels.south
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Label {
+                        text: "text\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\n"
                     }
                 }
             }

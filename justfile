@@ -1,23 +1,27 @@
 default:
-	just --list
+    just --list
 
-#devcontainer
-build: 
+# devcontainer
+build:
     cmake -B build
     cmake --build build
 
-#devcontainer
+# devcontainer
+build-exampleapp:
+    cmake -B build -D BUILD_EXAMPLE_APP=ON
+    cmake --build build
+
+# devcontainer
 run:
-    just build
+    just build-exampleapp
     ./build/bin/example-app
 
-#devcontainer
+# devcontainer
 test:
     just build
     ctest --test-dir build --output-on-failure
 
-
-#host
+# host
 build-rpm:
     #!/usr/bin/env bash
     set -eou pipefail
@@ -37,15 +41,15 @@ build-rpm:
         cp -v ~/rpmbuild/RPMS/*/*.rpm /workspace/output/
     '
 
-#host
+# host
 build-flatpak: output
-	#!/usr/bin/env bash
-	set -eou pipefail
-	flatpak-builder --force-clean --repo=output/repo builddir .flatpak-manifest.json
-	flatpak build-bundle output/repo output/controllable.flatpak io.github.rfrench3.controllable
-	rm -r output/repo
-	rm -r builddir
+    #!/usr/bin/env bash
+    set -eou pipefail
+    flatpak-builder --force-clean --repo=output/repo builddir .flatpak-manifest.json
+    flatpak build-bundle output/repo output/controllable.flatpak io.github.rfrench3.controllable
+    rm -r output/repo
+    rm -r builddir
 
 [private]
 output:
-	mkdir -p output
+    mkdir -p output

@@ -6,7 +6,6 @@
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
-#include <QQuickWindow>
 #include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;

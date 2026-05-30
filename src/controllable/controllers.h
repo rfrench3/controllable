@@ -17,6 +17,7 @@
 #include <qobjectdefs.h>
 #include <qqmlintegration.h>
 #include <qtmetamacros.h>
+#include <qtypes.h>
 
 #define POLLING_RATE 16 // ~60FPS
 
@@ -34,6 +35,7 @@ void sendButtonReleased(QQuickItem *item, Qt::Key key);
 void sendMousePressed(QQuickItem *item);
 void sendMouseReleased(QQuickItem *item);
 
+void sendScrollEvent(QQuickItem *item, int strength);
 };
 
 // If a double is returned for an axis value, it ranges from -1 to 1.
@@ -60,6 +62,7 @@ class Gamepad : public QObject
     void setPollController(bool windowActiveState);
 
     void pollSDL();
+    bool polling_active = false;
     QTimer *m_timer;
 
     // used for left stick DPad emulation
@@ -144,5 +147,10 @@ public:
     Q_INVOKABLE void sendMouseReleased(QQuickItem *item)
     {
         InputEmulator::sendMouseReleased(item);
+    };
+
+    Q_INVOKABLE void sendScrollEvent(QQuickItem *item, int strength)
+    {
+        InputEmulator::sendScrollEvent(item, strength);
     };
 };

@@ -10,6 +10,7 @@
 #include <SDL3/SDL_gamepad.h>
 #include <qcoreapplication.h>
 #include <qguiapplication.h>
+#include <qnamespace.h>
 
 Gamepad::Gamepad(QObject *parent)
     : QObject(parent)
@@ -34,6 +35,9 @@ Gamepad::Gamepad(QObject *parent)
 
 double Gamepad::getAxisValue(SDL_GamepadAxis axis) const
 {
+    if (!polling_active)
+        return 0;
+
     // If the gamepad or axis is invalid, this returns 0
     SDL_Gamepad *gamepad = SDL_GetGamepadFromID(m_focusedJoystick);
 
@@ -60,9 +64,11 @@ void Gamepad::setPollController(bool windowActive)
                 handleGamepadRemoved(event.gdevice.which);
         }
         m_timer->start(POLLING_RATE);
+        polling_active = true;
     } else {
         // Window unfocused: Pausing controller polling
         m_timer->stop();
+        polling_active = false;
     }
 }
 
@@ -187,18 +193,27 @@ namespace InputEmulator
 {
 void sendButtonPressed(QQuickItem *item, Qt::Key key)
 {
+    if (!item)
+        return;
+
     QKeyEvent keyEvent(QEvent::KeyPress, key, Qt::NoModifier);
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
 void sendButtonReleased(QQuickItem *item, Qt::Key key)
 {
+    if (!item)
+        return;
+
     QKeyEvent keyEvent(QEvent::KeyRelease, key, Qt::NoModifier);
     QCoreApplication::sendEvent(item, &keyEvent);
 }
 
 void sendMousePressed(QQuickItem *item)
 {
+    if (!item)
+        return;
+
     qreal pos_x = item->x();
     qreal pos_y = item->y();
 
@@ -210,6 +225,9 @@ void sendMousePressed(QQuickItem *item)
 
 void sendMouseReleased(QQuickItem *item)
 {
+    if (!item)
+        return;
+
     qreal pos_x = item->x();
     qreal pos_y = item->y();
 
@@ -217,5 +235,52 @@ void sendMouseReleased(QQuickItem *item)
     QMouseEvent event =
         QMouseEvent(QEvent::MouseButtonRelease, QPointF(), point, Qt::MouseButton::LeftButton, Qt::MouseButton::NoButton, Qt::KeyboardModifier::NoModifier);
     QCoreApplication::sendEvent(item, &event);
+}
+
+// FIXME: Not reliable:
+// - if the center of item is under another object, the above object gets scrolled
+// - if the center of item is not visible, the scroll fails
+void sendScrollEvent(QQuickItem *item, int strength)
+{
+    if (!item || !item->window())
+        return;
+
+    // Use item center in scene coords
+    QPointF scenePos = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+    QPointF globalPos = item->window()->mapToGlobal(scenePos.toPoint());
+
+    QWheelEvent event(scenePos, // position in scene
+                      globalPos, // global position
+                      QPoint(0, -strength), // pixel delta
+                      QPoint(0, 0), // angle delta
+                      Qt::NoButton,
+                      Qt::NoModifier,
+                      Qt::ScrollUpdate,
+                      false,
+                      Qt::MouseEventSynthesizedByApplication);
+
+    QWheelEvent eventBegin(scenePos, // position in scene
+                           globalPos, // global position
+                           QPoint(0, -strength), // pixel delta
+                           QPoint(0, 0), // angle delta
+                           Qt::NoButton,
+                           Qt::NoModifier,
+                           Qt::ScrollBegin,
+                           false,
+                           Qt::MouseEventSynthesizedByApplication);
+
+    QWheelEvent eventEnd(scenePos, // position in scene
+                         globalPos, // global position
+                         QPoint(0, -strength), // pixel delta
+                         QPoint(0, 0), // angle delta
+                         Qt::NoButton,
+                         Qt::NoModifier,
+                         Qt::ScrollEnd,
+                         false,
+                         Qt::MouseEventSynthesizedByApplication);
+
+    QCoreApplication::sendEvent(item->window(), &eventBegin);
+    QCoreApplication::sendEvent(item->window(), &event);
+    QCoreApplication::sendEvent(item->window(), &eventEnd);
 }
 }

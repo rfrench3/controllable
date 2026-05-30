@@ -4,9 +4,9 @@
 cmake_minimum_required(VERSION 3.22)
 
 file(READ "version.txt" APP_VERSION)
-project(controllable VERSION ${APP_VERSION})
+project(qt6-controllable VERSION ${APP_VERSION})
 
-find_package(SDL3 REQUIRED)
+option(BUILD_EXAMPLE_APP "builds example app for testing the module" OFF)
 
 ### Set up and install Qt/KDE dependencies ###
 
@@ -33,16 +33,13 @@ find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS
     Qml
     Widgets
     QuickControls2
-    Test
 )
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
-    Kirigami
-    CoreAddons
-    Config
     I18n
-    IconThemes
 )
+
+find_package(SDL3 REQUIRED)
 
 include(KDEGitCommitHooks)
 include(KDEClangFormat)
@@ -51,7 +48,7 @@ add_subdirectory(src)
 
 # TODO: create proper tests
 
-install(FILES ${METAINFO_OUTPUT} DESTINATION ${KDE_INSTALL_METAINFODIR})
+install(FILES io.github.rfrench3.controllable.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
 ki18n_install(po)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
