@@ -75,16 +75,19 @@ void Gamepad::setPollController(bool windowActive)
 void Gamepad::pollSDL()
 {
     SDL_Event event;
+    processRepeats();
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             Q_EMIT buttonEvent(event.gbutton.button, true);
             setFocusedController(event.gbutton.which);
+            updateRepeatState(event.gbutton.which, event.gbutton.button, true);
             break;
 
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             Q_EMIT buttonEvent(event.gbutton.button, false);
             setFocusedController(event.gbutton.which);
+            updateRepeatState(event.gbutton.which, event.gbutton.button, false);
             break;
 
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
@@ -175,17 +178,67 @@ void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
     // x < -DEADZONE
     if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+        updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, true);
     }
     if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+        updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, false);
     }
 
     // x > DEADZONE
     if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+        updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, true);
     }
     if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
+        updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+    }
+}
+
+void Gamepad::processRepeats()
+{
+    auto now = QDateTime::currentMSecsSinceEpoch();
+
+    for (auto &pair : m_repeatStates) {
+        auto &state = pair.second;
+
+        if (state.upHeld && now >= state.upNextFire) {
+            Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+            state.upNextFire = now + KEY_REPEAT_RATE;
+        }
+        if (state.downHeld && now >= state.downNextFire) {
+            Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+            state.downNextFire = now + KEY_REPEAT_RATE;
+        }
+    }
+}
+
+void Gamepad::updateRepeatState(SDL_JoystickID id, uint8_t btn, bool active)
+{
+    if (btn != SDL_GAMEPAD_BUTTON_DPAD_UP && btn != SDL_GAMEPAD_BUTTON_DPAD_DOWN)
+        return;
+
+    auto &state = m_repeatStates[id];
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    const qint64 initialDelayMs = KEY_REPEAT_DELAY;
+
+    if (btn == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+        if (active) {
+            state.upHeld = true;
+            state.upNextFire = now + initialDelayMs;
+        } else {
+            state.upHeld = false;
+            state.upNextFire = 0;
+        }
+    } else { // DPAD_DOWN
+        if (active) {
+            state.downHeld = true;
+            state.downNextFire = now + initialDelayMs;
+        } else {
+            state.downHeld = false;
+            state.downNextFire = 0;
+        }
     }
 }
 

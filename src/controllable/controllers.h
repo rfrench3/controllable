@@ -9,7 +9,9 @@
 #include <QString>
 #include <QTimer>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_oldnames.h>
 #include <cstdint>
 #include <map>
@@ -37,6 +39,17 @@ void sendMouseReleased(QQuickItem *item);
 
 void sendScrollEvent(QQuickItem *item, int strength);
 };
+
+struct RepeatState {
+    bool upHeld = false;
+    bool downHeld = false;
+    qint64 upNextFire = 0;
+    qint64 downNextFire = 0;
+};
+
+// TODO: get this information from the user instead of hardcoding the default
+#define KEY_REPEAT_DELAY 600
+#define KEY_REPEAT_RATE 40
 
 // If a double is returned for an axis value, it ranges from -1 to 1.
 class Gamepad : public QObject
@@ -67,6 +80,10 @@ class Gamepad : public QObject
 
     // used for left stick DPad emulation
     int16_t leftY_prev;
+
+    map<SDL_JoystickID, RepeatState> m_repeatStates;
+    void processRepeats();
+    void updateRepeatState(SDL_JoystickID id, uint8_t btn, bool active);
 
     // axis value functions
 public:
