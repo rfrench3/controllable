@@ -132,6 +132,36 @@ ApplicationWindow {
                     Button {
                         text: "button3"
                     }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
+                    Button {
+                        text: "button3"
+                    }
                 }
             }
         }

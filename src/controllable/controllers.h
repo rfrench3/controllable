@@ -83,7 +83,7 @@ class Gamepad : public QObject
 
     map<SDL_JoystickID, RepeatState> m_repeatStates;
     void processRepeats();
-    void updateRepeatState(SDL_JoystickID id, uint8_t btn, bool active);
+    void updateRepeatState(SDL_JoystickID id, uint8_t btn, bool pressed);
 
     // axis value functions
 public:
