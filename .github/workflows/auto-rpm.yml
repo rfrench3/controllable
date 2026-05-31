@@ -1,0 +1,39 @@
+on:
+    push:
+        tags:
+            - "*"
+    workflow_dispatch:
+name: Build RPM
+permissions:
+    contents: write
+jobs:
+    rpm:
+        name: "RPM"
+        runs-on: ubuntu-latest
+        container:
+            image: fedora:43
+        steps:
+            - uses: actions/checkout@v4
+            - name: Install dependencies
+              run: |
+                  dnf install -y rpm-build
+                  dnf builddep -y controllable.spec
+            - name: Build RPM
+              env:
+                  HOME: /root
+              run: |
+                  VERSION=$(cat version.txt)
+                  # Repack the checked-out source into a tarball with the prefix rpmbuild expects
+                  mkdir -p ~/rpmbuild/SOURCES
+                  tar --transform "s|^\.|controllable-$VERSION|" -czf ~/rpmbuild/SOURCES/$VERSION.tar.gz .
+                  rpmbuild -bb controllable.spec
+            - name: Upload RPM artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: controllable-rpm
+                  path: /root/rpmbuild/RPMS/**/*.rpm
+            - name: Attach RPM to release
+              if: startsWith(github.ref, 'refs/tags/')
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: /root/rpmbuild/RPMS/**/*.rpm
