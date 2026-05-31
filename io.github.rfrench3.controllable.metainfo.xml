@@ -13,6 +13,11 @@
     <p>A QML module that provides support for controllers.</p>
   </description>
   <releases>
+    <release version="v0.2.0" date="2026-05-30" type="snapshot">
+        <description>
+            <p>First build worthy of testing deployment</p>
+        </description>
+    </release>
     <release version="v0.0.1" date="2026-05-12" type="snapshot">
       <description>
         <p>Initial rpm build</p>
