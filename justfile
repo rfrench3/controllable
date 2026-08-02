@@ -28,7 +28,7 @@ build-rpm:
     mkdir -p ./output
     rm -f ./output/*.rpm
 
-    podman run --rm -v "$PWD:/workspace:z" -w /workspace fedora:43 bash -lc '
+    podman run --rm -v "$PWD:/workspace:z" -w /workspace fedora:44 bash -lc '
         set -eou pipefail
         dnf install -y rpm-build
         dnf builddep -y controllable.spec
