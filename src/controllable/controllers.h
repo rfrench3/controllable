@@ -21,9 +21,12 @@
 #include <qtmetamacros.h>
 #include <qtypes.h>
 
-#define POLLING_RATE 16 // ~60FPS
+#include "config.h"
 
-#define NO_CONTROLLER 0
+using namespace Qt::StringLiterals;
+
+constexpr int POLLING_RATE = 1000 / 60;
+constexpr int NO_CONTROLLER = 0;
 
 using std::map;
 
@@ -46,10 +49,6 @@ struct RepeatState {
     qint64 upNextFire = 0;
     qint64 downNextFire = 0;
 };
-
-// TODO: get this information from the user instead of hardcoding the default
-#define KEY_REPEAT_DELAY 600
-#define KEY_REPEAT_RATE 40
 
 // If a double is returned for an axis value, it ranges from -1 to 1.
 class Gamepad : public QObject

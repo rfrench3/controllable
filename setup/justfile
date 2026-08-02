@@ -1,0 +1,5 @@
+default:
+    just --list
+
+link-configs:
+    ln -s /workspaces/controllable/setup/kcminputrc ~/.config/kcminputrc

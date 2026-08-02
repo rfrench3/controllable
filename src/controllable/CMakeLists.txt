@@ -10,10 +10,11 @@ ecm_add_qml_module(qt6-controllable
 
 target_sources(qt6-controllable
     PRIVATE
-    controllers.cpp
+    config.h
     controllers.h
-    labels.cpp
+    controllers.cpp
     labels.h
+    labels.cpp
 )
 
 ecm_target_qml_sources(qt6-controllable
@@ -27,6 +28,7 @@ target_link_libraries(qt6-controllable
     Qt6::Qml
     Qt6::Quick
     KF6::I18n
+    KF6::ConfigCore
     SDL3::SDL3
 )
 

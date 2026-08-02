@@ -198,6 +198,9 @@ void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
 
 void Gamepad::processRepeats()
 {
+    if (!kcminputrc.KeyRepeat)
+        return;
+
     auto now = QDateTime::currentMSecsSinceEpoch();
 
     for (auto &pair : m_repeatStates) {
@@ -208,11 +211,11 @@ void Gamepad::processRepeats()
 
         if (state.upHeld && now >= state.upNextFire) {
             Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
-            state.upNextFire = now + KEY_REPEAT_RATE;
+            state.upNextFire = now + (1000 / kcminputrc.RepeatRate);
         }
         if (state.downHeld && now >= state.downNextFire) {
             Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
-            state.downNextFire = now + KEY_REPEAT_RATE;
+            state.downNextFire = now + (1000 / kcminputrc.RepeatRate);
         }
     }
 }
@@ -224,7 +227,7 @@ void Gamepad::updateRepeatState(SDL_JoystickID id, uint8_t btn, bool pressed)
 
     auto &state = m_repeatStates[id];
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    const qint64 initialDelayMs = KEY_REPEAT_DELAY;
+    const qint64 initialDelayMs = kcminputrc.RepeatDelay;
 
     if (btn == SDL_GAMEPAD_BUTTON_DPAD_UP) {
         if (pressed) {

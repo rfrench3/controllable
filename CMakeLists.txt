@@ -37,6 +37,7 @@ find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
     I18n
+    Config
 )
 
 find_package(SDL3 REQUIRED)
