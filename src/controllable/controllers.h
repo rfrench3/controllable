@@ -39,8 +39,6 @@ void sendButtonReleased(QQuickItem *item, Qt::Key key);
 
 void sendMousePressed(QQuickItem *item);
 void sendMouseReleased(QQuickItem *item);
-
-void sendScrollEvent(QQuickItem *item, int strength);
 };
 
 struct RepeatState {
@@ -163,10 +161,5 @@ public:
     Q_INVOKABLE void sendMouseReleased(QQuickItem *item)
     {
         InputEmulator::sendMouseReleased(item);
-    };
-
-    Q_INVOKABLE void sendScrollEvent(QQuickItem *item, int strength)
-    {
-        InputEmulator::sendScrollEvent(item, strength);
     };
 };
