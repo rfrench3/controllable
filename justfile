@@ -13,8 +13,14 @@ build-exampleapp:
 
 # devcontainer
 run:
-    just build-exampleapp
+    #!/usr/bin/env bash
+    source ./build/prefix.sh
     ./build/bin/example-app
+
+# devcontainer
+brun:
+    just build-exampleapp
+    just run
 
 # devcontainer
 test:
