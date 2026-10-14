@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "controllers.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
@@ -12,11 +13,8 @@
 #include <qobject.h>
 #include <qobjectdefs.h>
 #include <qqmlintegration.h>
+#include <qtclasshelpermacros.h>
 #include <qtmetamacros.h>
-
-#define POLLING_RATE 16 // ~60FPS
-
-#define NO_CONTROLLER 0
 
 using std::map;
 
@@ -25,6 +23,8 @@ class Labels : public QObject
     Q_OBJECT
     QML_ELEMENT
     QML_SINGLETON
+
+    Q_DISABLE_COPY_MOVE(Labels)
 
     Q_PROPERTY(QString south MEMBER south NOTIFY labelsChanged)
     Q_PROPERTY(QString east MEMBER east NOTIFY labelsChanged)
@@ -35,29 +35,33 @@ class Labels : public QObject
 
     QString south, east, west, north, spacer, spacer_large;
     QString getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button);
-    SDL_JoystickID m_focusedJoystick;
 
-    static Labels *m_instance;
+    SDL_JoystickID m_focusedJoystick = NO_CONTROLLER;
+
+    Labels(QObject *parent = nullptr)
+        : QObject(parent) {
+
+        };
 
 public:
-    Labels(QObject *parent = nullptr)
-        : QObject(parent)
-    {
-        m_instance = this;
-        m_focusedJoystick = NO_CONTROLLER;
-    };
-
     static Labels *instance()
     {
-        return m_instance;
+        static Labels *s_instance = new Labels();
+        return s_instance;
     }
 
+    static Labels *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine)
+    {
+        Q_UNUSED(jsEngine);
+        Labels *instancePtr = instance();
+        qmlEngine->setObjectOwnership(instancePtr, QQmlEngine::CppOwnership);
+        return instancePtr;
+    }
+
+public:
     Q_SIGNAL void labelsChanged();
 
     void changeLabels(SDL_JoystickID which);
 };
 
-inline static Labels *labels()
-{
-    return Labels::instance();
-}
+inline Labels *labels = Labels::instance();

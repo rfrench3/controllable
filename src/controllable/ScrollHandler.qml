@@ -63,8 +63,6 @@ Item {
 
                     root.target.contentX = clamp(new_pos, min_pos, max_pos);
                 }
-            } else {
-                Gamepad.sendScrollEvent(root.target, Gamepad.rightY * 256);
             }
         }
     }

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Robert French <frenchrobertm@outlook.com>
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Register relevant SDL3 enums with Qt
 
 #include <SDL3/SDL_gamepad.h>

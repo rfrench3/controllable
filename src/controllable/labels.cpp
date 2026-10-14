@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "labels.h"
-#include <KLocalizedString>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;
-
-Labels *Labels::m_instance = nullptr;
 
 void Labels::changeLabels(SDL_JoystickID which)
 {

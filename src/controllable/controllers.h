@@ -147,6 +147,9 @@ public:
 
     Q_SIGNAL void buttonEvent(uint8_t button, bool pressed);
 
+    Q_SIGNAL void buttonPressed(int button);
+    Q_SIGNAL void buttonReleased(int button);
+
     Q_INVOKABLE void sendButtonPressed(QQuickItem *item, Qt::Key key)
     {
         InputEmulator::sendButtonPressed(item, key);
