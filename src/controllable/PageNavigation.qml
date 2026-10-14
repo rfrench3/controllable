@@ -50,36 +50,33 @@ Item {
             }
         }
 
-        /**
-         * @brief onButtonEvent - Reimplement this separately from PageNavigation for custom controller navigation.
-         * @param buttonId - SDL3 mapping for controller buttons.
-         * @param pressed - true is button is being pressed, false if button is being released.
-         */
-        function onButtonEvent(buttonId: int, pressed: bool) {
+        function onButtonPressed(buttonId: int): void {
             if (!root.active)
                 return;
 
             const item = root.Window.window.activeFocusItem;
 
             switch (buttonId) {
-            case 0: // A
-                mouseEvent(pressed);
+            case SDL_GAMEPAD.SOUTH:
+                mouseEvent(true);
                 break;
-            case 11: // Dpad Up
-                if (!pressed)
-                    break;
-
+            case SDL_GAMEPAD.DPAD_UP:
                 const itemUp = root.__nextItemInScope(item, false);
                 itemUp.forceActiveFocus(Qt.TabFocusReason);
                 break;
-            case 12: // Dpad Down
-                if (!pressed)
-                    break;
-
+            case SDL_GAMEPAD.DPAD_DOWN:
                 const itemDown = root.__nextItemInScope(item, true);
                 itemDown.forceActiveFocus(Qt.TabFocusReason);
                 break;
             }
+        }
+
+        function onButtonReleased(buttonId: int): void {
+            if (!root.active)
+                return;
+
+            if (buttonId == SDL_GAMEPAD.SOUTH)
+                mouseEvent(false);
         }
     }
 
@@ -98,7 +95,7 @@ Item {
         return false;
     }
 
-    function __nextItemInScope(item: Item, forward: Item): Item {
+    function __nextItemInScope(item: Item, forward: bool): Item {
         if (!item)
             return null;
 
