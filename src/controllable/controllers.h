@@ -18,6 +18,7 @@
 #include <qobject.h>
 #include <qobjectdefs.h>
 #include <qqmlintegration.h>
+#include <qtclasshelpermacros.h>
 #include <qtmetamacros.h>
 #include <qtypes.h>
 
@@ -78,6 +79,7 @@ class Gamepad : public QObject
     // used for left stick DPad emulation
     int16_t leftY_prev;
 
+    // Allows the user to hold dpad/stick up or down to rapidly navigate up/down
     map<SDL_JoystickID, RepeatState> m_repeatStates;
     void processRepeats();
     void updateRepeatState(SDL_JoystickID id, uint8_t btn, bool pressed);
