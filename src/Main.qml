@@ -22,23 +22,17 @@ ApplicationWindow {
         TabButton {
             text: "Page Nav"
         }
-        TabButton {
-            text: "Scrollwheel"
-        }
     }
 
     Connections {
         target: GP.Gamepad
 
-        function onButtonEvent(buttonId, pressed) {
-            if (!pressed)
-                return;
-
+        function onButtonPressed(buttonId) {
             switch (buttonId) {
-            case 9: // LB
+            case GP.SDL_GAMEPAD.LEFT_SHOULDER:
                 bar.decrementCurrentIndex();
                 break;
-            case 10: // RB
+            case GP.SDL_GAMEPAD.RIGHT_SHOULDER:
                 bar.incrementCurrentIndex();
                 break;
             }
@@ -127,77 +121,14 @@ ApplicationWindow {
                         text: "button2"
                     }
                     Label {
-                        text: "text label " + GP.Labels.south
+                        text: ["Controller labels", GP.Labels.south, GP.Labels.east, GP.Labels.west, GP.Labels.north].join(', ')
                     }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                }
-            }
-        }
-        Item {
-            GP.ScrollHandler {
-                // TODO: make it accept a json object to represent a QPoint, or make it create that when the target isnt a flickable or scrollbar.
-                //
-                // This works as long as the center of the target item is visible, but fails once the item's center is not visible (outside the window, hidden behind a different item, etc)
-                target: randbutton
-            }
-
-            Layout.fillHeight: true
-
-            ScrollView {
-                id: viewte
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.bottom: parent.bottom
-
-                ColumnLayout {
-                    anchors.fill: parent
-                    Button {
-                        text: "button1"
-                    }
-                    Button {
-                        id: randbutton
-                        text: "button2"
-                    }
-                    Label {
-                        text: "text label " + GP.Labels.south
-                    }
-                    Button {
-                        text: "button3"
-                    }
-                    Label {
-                        text: "text\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\ntext\n"
+                    Repeater {
+                        model: 12
+                        delegate: Button {
+                            required property int index
+                            text: `Button ${index + 3}`
+                        }
                     }
                 }
             }
