@@ -36,7 +36,6 @@ find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS
 )
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS
-    I18n
     Config
 )
 
@@ -50,7 +49,6 @@ add_subdirectory(src)
 # TODO: create proper tests
 
 install(FILES io.github.rfrench3.controllable.metainfo.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
-ki18n_install(po)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

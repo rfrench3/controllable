@@ -26,8 +26,6 @@ if(BUILD_EXAMPLE_APP)
     Qt6::Widgets
     Qt6::Quick
     Qt6::QuickControls2
-    KF6::I18n
-    KF6::I18nQml
     qt6-controllable
 )
 

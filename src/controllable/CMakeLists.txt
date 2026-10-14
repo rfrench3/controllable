@@ -15,6 +15,7 @@ target_sources(qt6-controllable
     controllers.cpp
     labels.h
     labels.cpp
+    enums.h
 )
 
 ecm_target_qml_sources(qt6-controllable
@@ -27,7 +28,6 @@ target_link_libraries(qt6-controllable
     PRIVATE
     Qt6::Qml
     Qt6::Quick
-    KF6::I18n
     KF6::ConfigCore
     SDL3::SDL3
 )
