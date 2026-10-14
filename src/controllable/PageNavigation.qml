@@ -29,7 +29,7 @@ Item {
     Connections {
         target: Gamepad
 
-        function keyEvent(button_down, key) {
+        function keyEvent(button_down: bool, key: int): void {
             let item = root.Window.window.activeFocusItem;
             if (button_down == true) {
                 // console.log("button down");
@@ -40,7 +40,7 @@ Item {
             }
         }
 
-        function mouseEvent(button_down, item = root.Window.window.activeFocusItem) {
+        function mouseEvent(button_down: bool, item = root.Window.window.activeFocusItem): void {
             if (button_down == true) {
                 Gamepad.sendMousePressed(item);
                 // console.log("mouse down");
@@ -55,11 +55,11 @@ Item {
          * @param buttonId - SDL3 mapping for controller buttons.
          * @param pressed - true is button is being pressed, false if button is being released.
          */
-        function onButtonEvent(buttonId, pressed) {
+        function onButtonEvent(buttonId: int, pressed: bool) {
             if (!root.active)
                 return;
 
-            let item = root.Window.window.activeFocusItem;
+            const item = root.Window.window.activeFocusItem;
 
             switch (buttonId) {
             case 0: // A
@@ -69,14 +69,14 @@ Item {
                 if (!pressed)
                     break;
 
-                let itemUp = root.__nextItemInScope(item, false);
+                const itemUp = root.__nextItemInScope(item, false);
                 itemUp.forceActiveFocus(Qt.TabFocusReason);
                 break;
             case 12: // Dpad Down
                 if (!pressed)
                     break;
 
-                let itemDown = root.__nextItemInScope(item, true);
+                const itemDown = root.__nextItemInScope(item, true);
                 itemDown.forceActiveFocus(Qt.TabFocusReason);
                 break;
             }
@@ -88,7 +88,7 @@ Item {
         active: root.active
     }
 
-    function __descendantOfParent(item) {
+    function __descendantOfParent(item: QtObject): bool {
         let cursor = item;
         while (cursor) {
             if (cursor === root.parent)
@@ -98,7 +98,7 @@ Item {
         return false;
     }
 
-    function __nextItemInScope(item, forward) {
+    function __nextItemInScope(item: Item, forward: Item): Item {
         if (!item)
             return null;
 
