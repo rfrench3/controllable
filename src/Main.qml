@@ -27,14 +27,16 @@ ApplicationWindow {
     Connections {
         target: GP.Gamepad
 
-        function onButtonPressed(buttonId) {
+        function onButtonPressed(buttonId: int): void {
             switch (buttonId) {
-            case GP.SDL_GAMEPAD.LEFT_SHOULDER:
+            case GP.SDL.LEFT_SHOULDER:
                 bar.decrementCurrentIndex();
                 break;
-            case GP.SDL_GAMEPAD.RIGHT_SHOULDER:
+            case GP.SDL.RIGHT_SHOULDER:
                 bar.incrementCurrentIndex();
                 break;
+            case GP.SDL.EAST:
+                Qt.exit(0);
             }
         }
     }

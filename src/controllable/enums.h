@@ -11,9 +11,9 @@
 
 class SDL_GAMEPAD : public QObject
 {
-    Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
+    Q_OBJECT;
+    QML_NAMED_ELEMENT(SDL);
+    QML_SINGLETON;
 
 public:
     enum class BUTTON {

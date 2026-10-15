@@ -26,63 +26,67 @@ Item {
     // When given a scroll bar, the right stick will smoothly scroll through it
     property Item targetScrollbar: null as ScrollBar
 
+    function pressAction(buttonId: int): void {
+        const action = root.__actionsPressed[buttonId];
+        if (typeof action === "function")
+            action();
+    }
+
+    readonly property var __actionsPressed: ({
+            [SDL.SOUTH]: function (): void {
+                __mouseEvent(true);
+            },
+            [SDL.DPAD_UP]: function (): void {
+                const item = root.Window.window.activeFocusItem;
+                const itemUp = root.__nextItemInScope(item, false);
+                itemUp.forceActiveFocus(Qt.TabFocusReason);
+            },
+            [SDL.DPAD_DOWN]: function (): void {
+                const item = root.Window.window.activeFocusItem;
+                const itemDown = root.__nextItemInScope(item, true);
+                itemDown.forceActiveFocus(Qt.TabFocusReason);
+            }
+        })
+
     Connections {
         target: Gamepad
 
-        function keyEvent(button_down: bool, key: int): void {
-            let item = root.Window.window.activeFocusItem;
-            if (button_down == true) {
-                // console.log("button down");
-                Gamepad.sendButtonPressed(item, key);
-            } else {
-                // console.log("button up");
-                Gamepad.sendButtonReleased(item, key);
-            }
-        }
-
-        function mouseEvent(button_down: bool, item = root.Window.window.activeFocusItem): void {
-            if (button_down == true) {
-                Gamepad.sendMousePressed(item);
-                // console.log("mouse down");
-            } else {
-                Gamepad.sendMouseReleased(item);
-                // console.log("mouse up");
-            }
-        }
+        enabled: root.active
 
         function onButtonPressed(buttonId: int): void {
-            if (!root.active)
-                return;
-
-            const item = root.Window.window.activeFocusItem;
-
-            switch (buttonId) {
-            case SDL_GAMEPAD.SOUTH:
-                mouseEvent(true);
-                break;
-            case SDL_GAMEPAD.DPAD_UP:
-                const itemUp = root.__nextItemInScope(item, false);
-                itemUp.forceActiveFocus(Qt.TabFocusReason);
-                break;
-            case SDL_GAMEPAD.DPAD_DOWN:
-                const itemDown = root.__nextItemInScope(item, true);
-                itemDown.forceActiveFocus(Qt.TabFocusReason);
-                break;
-            }
+            root.pressAction(buttonId);
         }
 
         function onButtonReleased(buttonId: int): void {
-            if (!root.active)
-                return;
-
-            if (buttonId == SDL_GAMEPAD.SOUTH)
-                mouseEvent(false);
+            if (buttonId == SDL.SOUTH)
+                root.__mouseEvent(false);
         }
     }
 
     ScrollHandler {
         target: root.targetScrollbar
         active: root.active
+    }
+
+    function __mouseEvent(button_down: bool, item = root.Window.window.activeFocusItem): void {
+        if (button_down == true) {
+            Gamepad.sendMousePressed(item);
+            // console.log("mouse down");
+        } else {
+            Gamepad.sendMouseReleased(item);
+            // console.log("mouse up");
+        }
+    }
+
+    function __keyEvent(button_down: bool, key: int): void {
+        let item = root.Window.window.activeFocusItem;
+        if (button_down == true) {
+            // console.log("button down");
+            Gamepad.sendButtonPressed(item, key);
+        } else {
+            // console.log("button up");
+            Gamepad.sendButtonReleased(item, key);
+        }
     }
 
     function __descendantOfParent(item: QtObject): bool {
