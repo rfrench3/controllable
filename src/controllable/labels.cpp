@@ -61,6 +61,6 @@ QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button
     case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
         return u"△"_s;
     default:
-        return u"(B%1)"_s.arg(static_cast<int>(label)); // Unknown, just show the enum value
+        return u"(B%1)"_s.arg(static_cast<int>(button)); // Unknown, just show the enum value for the button
     }
 }
