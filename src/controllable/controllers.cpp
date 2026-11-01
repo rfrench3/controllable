@@ -26,7 +26,6 @@ Gamepad::Gamepad(QObject *parent)
 
     connect(m_timer, &QTimer::timeout, this, QOverload<>::of(&Gamepad::pollSDL));
     m_timer->start(POLLING_RATE);
-    qDebug() << "Gamepad initialized.";
 
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, [this](Qt::ApplicationState state) {
         setPollController(state == Qt::ApplicationActive);
@@ -80,12 +79,16 @@ void Gamepad::pollSDL()
         switch (event.type) {
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             Q_EMIT buttonEvent(event.gbutton.button, true);
+            Q_EMIT buttonPressed(event.gbutton.button);
+
             setFocusedController(event.gbutton.which);
             updateRepeatState(event.gbutton.which, event.gbutton.button, true);
             break;
 
         case SDL_EVENT_GAMEPAD_BUTTON_UP:
             Q_EMIT buttonEvent(event.gbutton.button, false);
+            Q_EMIT buttonReleased(event.gbutton.button);
+
             setFocusedController(event.gbutton.which);
             updateRepeatState(event.gbutton.which, event.gbutton.button, false);
             break;
@@ -111,8 +114,7 @@ void Gamepad::pollSDL()
 // Updates gamepad labels when the focused controller changes
 void Gamepad::setFocusedController(SDL_JoystickID which)
 {
-    if (labels())
-        labels()->changeLabels(which);
+    labels->changeLabels(which);
     m_focusedJoystick = which;
 }
 
@@ -178,20 +180,28 @@ void Gamepad::axisEmulateDpad(const int16_t &axisPrev, const int16_t &axisNow)
     // x < -DEADZONE
     if (axisNow < -DEADZONE && !(axisPrev < -DEADZONE)) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_UP);
+
         updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, true);
     }
     if (!(axisNow < -DEADZONE) && axisPrev < -DEADZONE) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, false);
+        Q_EMIT buttonReleased(SDL_GAMEPAD_BUTTON_DPAD_UP);
+
         updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_UP, false);
     }
 
     // x > DEADZONE
     if (axisNow > DEADZONE && !(axisPrev > DEADZONE)) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+        Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+
         updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
     }
     if (!(axisNow > DEADZONE) && axisPrev > DEADZONE) {
         Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
+        Q_EMIT buttonReleased(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+
         updateRepeatState(m_focusedJoystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, false);
     }
 }
@@ -211,10 +221,12 @@ void Gamepad::processRepeats()
 
         if (state.upHeld && now >= state.upNextFire) {
             Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_UP, true);
+            Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_UP);
             state.upNextFire = now + (1000 / kcminputrc.RepeatRate);
         }
         if (state.downHeld && now >= state.downNextFire) {
             Q_EMIT buttonEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN, true);
+            Q_EMIT buttonPressed(SDL_GAMEPAD_BUTTON_DPAD_DOWN);
             state.downNextFire = now + (1000 / kcminputrc.RepeatRate);
         }
     }
@@ -294,52 +306,5 @@ void sendMouseReleased(QQuickItem *item)
     QMouseEvent event =
         QMouseEvent(QEvent::MouseButtonRelease, QPointF(), point, Qt::MouseButton::LeftButton, Qt::MouseButton::NoButton, Qt::KeyboardModifier::NoModifier);
     QCoreApplication::sendEvent(item, &event);
-}
-
-// FIXME: Not reliable:
-// - if the center of item is under another object, the above object gets scrolled
-// - if the center of item is not visible, the scroll fails
-void sendScrollEvent(QQuickItem *item, int strength)
-{
-    if (!item || !item->window())
-        return;
-
-    // Use item center in scene coords
-    QPointF scenePos = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
-    QPointF globalPos = item->window()->mapToGlobal(scenePos.toPoint());
-
-    QWheelEvent event(scenePos, // position in scene
-                      globalPos, // global position
-                      QPoint(0, -strength), // pixel delta
-                      QPoint(0, 0), // angle delta
-                      Qt::NoButton,
-                      Qt::NoModifier,
-                      Qt::ScrollUpdate,
-                      false,
-                      Qt::MouseEventSynthesizedByApplication);
-
-    QWheelEvent eventBegin(scenePos, // position in scene
-                           globalPos, // global position
-                           QPoint(0, -strength), // pixel delta
-                           QPoint(0, 0), // angle delta
-                           Qt::NoButton,
-                           Qt::NoModifier,
-                           Qt::ScrollBegin,
-                           false,
-                           Qt::MouseEventSynthesizedByApplication);
-
-    QWheelEvent eventEnd(scenePos, // position in scene
-                         globalPos, // global position
-                         QPoint(0, -strength), // pixel delta
-                         QPoint(0, 0), // angle delta
-                         Qt::NoButton,
-                         Qt::NoModifier,
-                         Qt::ScrollEnd,
-                         false,
-                         Qt::MouseEventSynthesizedByApplication);
-
-    QCoreApplication::sendEvent(item->window(), &eventBegin);
-    QCoreApplication::sendEvent(item->window(), &event);
-    QCoreApplication::sendEvent(item->window(), &eventEnd);
 }
 }

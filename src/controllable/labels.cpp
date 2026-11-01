@@ -2,15 +2,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "labels.h"
-#include <KLocalizedString>
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QKeyEvent>
 #include <qcoreapplication.h>
 
 using namespace Qt::Literals::StringLiterals;
-
-Labels *Labels::m_instance = nullptr;
 
 void Labels::changeLabels(SDL_JoystickID which)
 {
@@ -48,22 +45,22 @@ QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button
 
     switch (label) {
     case SDL_GAMEPAD_BUTTON_LABEL_A:
-        return u"(A)"_s;
+        return u"Ⓐ"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_B:
-        return u"(B)"_s;
+        return u"Ⓑ"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_X:
-        return u"(X)"_s;
+        return u"Ⓧ"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_Y:
-        return u"(Y)"_s;
+        return u"Ⓨ"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
-        return u"(✖)"_s;
+        return u"✕"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
-        return u"(🞇)"_s;
+        return u"○"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_SQUARE:
-        return u"(🞑)"_s;
+        return u"▢"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
-        return u"(🛆)"_s;
+        return u"△"_s;
     default:
-        return u"(?)"_s; // Unknown
+        return u"(B%1)"_s.arg(static_cast<int>(button)); // Unknown, just show the enum value for the button
     }
 }

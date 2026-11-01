@@ -30,7 +30,9 @@ Item {
         running: root.active && ((Math.abs(Gamepad.rightY) > Gamepad.deadzone) || (Math.abs(Gamepad.rightX) > Gamepad.deadzone))
         repeat: true
         onTriggered: {
-            const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+            function clamp(val: double, min: double, max: double): double {
+                return Math.min(Math.max(val, min), max);
+            }
 
             const deltaY = (Math.abs(Gamepad.rightY) > Gamepad.deadzone) ? Gamepad.rightY : 0;
             const deltaX = (Math.abs(Gamepad.rightX) > Gamepad.deadzone) ? Gamepad.rightX : 0;
@@ -61,8 +63,6 @@ Item {
 
                     root.target.contentX = clamp(new_pos, min_pos, max_pos);
                 }
-            } else {
-                Gamepad.sendScrollEvent(root.target, Gamepad.rightY * 256);
             }
         }
     }

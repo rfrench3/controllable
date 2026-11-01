@@ -26,60 +26,40 @@ Item {
     // When given a scroll bar, the right stick will smoothly scroll through it
     property Item targetScrollbar: null as ScrollBar
 
+    function pressAction(buttonId: int): void {
+        const action = root.__actionsPressed[buttonId];
+        if (typeof action === "function")
+            action();
+    }
+
+    readonly property var __actionsPressed: ({
+            [SDL.SOUTH]: function (): void {
+                __mouseEvent(true);
+            },
+            [SDL.DPAD_UP]: function (): void {
+                const item = root.Window.window.activeFocusItem;
+                const itemUp = root.__nextItemInScope(item, false);
+                itemUp.forceActiveFocus(Qt.TabFocusReason);
+            },
+            [SDL.DPAD_DOWN]: function (): void {
+                const item = root.Window.window.activeFocusItem;
+                const itemDown = root.__nextItemInScope(item, true);
+                itemDown.forceActiveFocus(Qt.TabFocusReason);
+            }
+        })
+
     Connections {
         target: Gamepad
 
-        function keyEvent(button_down, key) {
-            let item = root.Window.window.activeFocusItem;
-            if (button_down == true) {
-                // console.log("button down");
-                Gamepad.sendButtonPressed(item, key);
-            } else {
-                // console.log("button up");
-                Gamepad.sendButtonReleased(item, key);
-            }
+        enabled: root.active
+
+        function onButtonPressed(buttonId: int): void {
+            root.pressAction(buttonId);
         }
 
-        function mouseEvent(button_down, item = root.Window.window.activeFocusItem) {
-            if (button_down == true) {
-                Gamepad.sendMousePressed(item);
-                // console.log("mouse down");
-            } else {
-                Gamepad.sendMouseReleased(item);
-                // console.log("mouse up");
-            }
-        }
-
-        /**
-         * @brief onButtonEvent - Reimplement this separately from PageNavigation for custom controller navigation.
-         * @param buttonId - SDL3 mapping for controller buttons.
-         * @param pressed - true is button is being pressed, false if button is being released.
-         */
-        function onButtonEvent(buttonId, pressed) {
-            if (!root.active)
-                return;
-
-            let item = root.Window.window.activeFocusItem;
-
-            switch (buttonId) {
-            case 0: // A
-                mouseEvent(pressed);
-                break;
-            case 11: // Dpad Up
-                if (!pressed)
-                    break;
-
-                let itemUp = root.__nextItemInScope(item, false);
-                itemUp.forceActiveFocus(Qt.TabFocusReason);
-                break;
-            case 12: // Dpad Down
-                if (!pressed)
-                    break;
-
-                let itemDown = root.__nextItemInScope(item, true);
-                itemDown.forceActiveFocus(Qt.TabFocusReason);
-                break;
-            }
+        function onButtonReleased(buttonId: int): void {
+            if (buttonId == SDL.SOUTH)
+                root.__mouseEvent(false);
         }
     }
 
@@ -88,7 +68,28 @@ Item {
         active: root.active
     }
 
-    function __descendantOfParent(item) {
+    function __mouseEvent(button_down: bool, item = root.Window.window.activeFocusItem): void {
+        if (button_down == true) {
+            Gamepad.sendMousePressed(item);
+            // console.log("mouse down");
+        } else {
+            Gamepad.sendMouseReleased(item);
+            // console.log("mouse up");
+        }
+    }
+
+    function __keyEvent(button_down: bool, key: int): void {
+        let item = root.Window.window.activeFocusItem;
+        if (button_down == true) {
+            // console.log("button down");
+            Gamepad.sendButtonPressed(item, key);
+        } else {
+            // console.log("button up");
+            Gamepad.sendButtonReleased(item, key);
+        }
+    }
+
+    function __descendantOfParent(item: QtObject): bool {
         let cursor = item;
         while (cursor) {
             if (cursor === root.parent)
@@ -98,7 +99,7 @@ Item {
         return false;
     }
 
-    function __nextItemInScope(item, forward) {
+    function __nextItemInScope(item: Item, forward: bool): Item {
         if (!item)
             return null;
 
