@@ -20,6 +20,7 @@ BuildRequires:  cmake(Qt6Core)
 BuildRequires:  cmake(Qt6Gui)
 BuildRequires:  cmake(Qt6Qml)
 BuildRequires:  cmake(Qt6QuickControls2)
+BuildRequires:  cmake(KF6Config)
 
 Provides:       qt6-controllable = %{version}-%{release}
 

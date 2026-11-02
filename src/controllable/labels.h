@@ -63,5 +63,3 @@ public:
 
     void changeLabels(SDL_JoystickID which);
 };
-
-inline Labels *labels = Labels::instance();

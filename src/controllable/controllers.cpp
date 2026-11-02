@@ -114,7 +114,7 @@ void Gamepad::pollSDL()
 // Updates gamepad labels when the focused controller changes
 void Gamepad::setFocusedController(SDL_JoystickID which)
 {
-    labels->changeLabels(which);
+    Labels::instance()->changeLabels(which);
     m_focusedJoystick = which;
 }
 
