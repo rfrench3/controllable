@@ -33,6 +33,7 @@ find_package(Qt6 ${QT6_MIN_VERSION} REQUIRED COMPONENTS
     Qml
     Widgets
     QuickControls2
+    Test
 )
 
 find_package(KF6 ${KF6_MIN_VERSION} REQUIRED COMPONENTS

@@ -16,18 +16,21 @@ target_sources(qt6-controllable
     labels.h
     labels.cpp
     enums.h
+    key-emulator.h
 )
 
 ecm_target_qml_sources(qt6-controllable
     SOURCES
     PageNavigation.qml
     ScrollHandler.qml
+    GamepadSupport.qml
 )
 
 target_link_libraries(qt6-controllable
     PRIVATE
     Qt6::Qml
     Qt6::Quick
+    Qt6::Test
     KF6::ConfigCore
     SDL3::SDL3
 )

@@ -47,3 +47,22 @@ public:
     };
     Q_ENUM(BUTTON)
 };
+
+// Bind gamepad buttons to keyboard keys
+class GAMEPAD_KEYS : public QObject
+{
+    Q_OBJECT;
+    QML_NAMED_ELEMENT(GamepadKeys);
+    QML_SINGLETON;
+
+public:
+    enum class BUTTON {
+        PRIMARY = Qt::Key_Space,
+        SECONDARY = Qt::Key_X,
+        TERTIARY = Qt::Key_C,
+        BACK = Qt::Key_Escape,
+        LEFT_BUMPER = Qt::Key_BracketLeft,
+        RIGHT_BUMPER = Qt::Key_BracketRight
+    };
+    Q_ENUM(BUTTON)
+};

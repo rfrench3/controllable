@@ -73,6 +73,10 @@ build-flatpak: output
     rm -r output/repo
     rm -r builddir
 
+# host
+install-rpm package:
+    sudo rpm -Uvh --replacepkgs {{package}}
+    
 [private]
 output:
     mkdir -p output
