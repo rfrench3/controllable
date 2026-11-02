@@ -68,6 +68,8 @@ Item {
     }
 
     Component.onCompleted: {
+        console.warn("ScrollHandler is deprecated in 0.3.0.");
+
         if (!root.__valid)
             console.log("Target is not a Scrollbar or flickable, falling back to unreliable trackpad emulation.");
     }

@@ -19,6 +19,8 @@ import io.github.rfrench3.controllable
 Item {
     id: root
 
+    Component.onCompleted: console.warn("PageNavigation is deprecated in 0.3.0.")
+
     property bool active: visible
 
     // targetScrollbar is an Item cast to ScrollBar to avoid linter issues of "QQuickScrollBar is not ScrollBar"
