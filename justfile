@@ -27,6 +27,9 @@ test:
     just build
     ctest --test-dir build --output-on-failure
 
+install-pkgbuild:
+    cd ./pkgbuild
+    makepkg -si
 
 container := "controllable-rpm-build"
 
@@ -37,15 +40,15 @@ build-rpm:
     mkdir -p ./output
     rm -f ./output/*.rpm
 
-    if ! podman container exists {{container}}; then
-        podman create --name {{container}} \
+    if ! podman container exists {{ container }}; then
+        podman create --name {{ container }} \
             -v "$PWD:/workspace:z" -w /workspace \
             fedora:44 sleep infinity
     fi
 
-    podman start {{container}}
+    podman start {{ container }}
 
-    podman exec {{container}} bash -lc '
+    podman exec {{ container }} bash -lc '
         set -eou pipefail
         dnf install -y rpm-build
         dnf builddep -y controllable.spec
@@ -62,7 +65,7 @@ build-rpm:
 
 # Throw away the build container (e.g. to move to a new Fedora release)
 clean-container:
-    podman rm -f {{container}}
+    podman rm -f {{ container }}
 
 # host
 build-flatpak: output
@@ -75,8 +78,8 @@ build-flatpak: output
 
 # host
 install-rpm package:
-    sudo rpm -Uvh --replacepkgs {{package}}
-    
+    sudo rpm -Uvh --replacepkgs {{ package }}
+
 [private]
 output:
     mkdir -p output

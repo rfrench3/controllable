@@ -1,3 +1,5 @@
 build
 .directory
 .cache
+pkgbuild/*
+!pkgbuild/PKGBUILD

@@ -1,0 +1,40 @@
+# Maintainer: Robert French <frenchrobertm@outlook.com>
+pkgname=qt6-controllable
+pkgver=0.3.0
+pkgrel=1
+pkgdesc="Qt6/QML module for controller support using SDL3"
+arch=('x86_64')
+url="https://github.com/rfrench3/qt6-controllable"
+license=('BSD-3-Clause' 'BSD-2-Clause')
+depends=(
+    'gcc-libs'
+    'glibc'
+    'kconfig'
+    'qt6-base'
+    'qt6-declarative'
+    'sdl3'
+)
+makedepends=(
+    'cmake'
+    'extra-cmake-modules'
+    'ninja'
+)
+source=()
+sha256sums=()
+
+pkgver() {
+    cat "$startdir/../version.txt"
+}
+
+build() {
+    cmake -B build -S "$startdir/.." -G Ninja \
+        -DBUILD_EXAMPLE_APP=OFF \
+        -DBUILD_TESTING=OFF \
+        -Wno-dev
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+    install -Dm644 "$startdir/../LICENSE.txt" -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
