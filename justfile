@@ -28,6 +28,7 @@ test:
     ctest --test-dir build --output-on-failure
 
 install-pkgbuild:
+    #!/usr/bin/env bash
     cd ./pkgbuild
     makepkg -si
 
