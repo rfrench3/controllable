@@ -3,12 +3,12 @@ default:
 
 # devcontainer
 build:
-    cmake -B build
+    cmake -B build -G Ninja
     cmake --build build
 
 # devcontainer
 build-exampleapp:
-    cmake -B build -D BUILD_EXAMPLE_APP=ON
+    cmake -B build -D BUILD_EXAMPLE_APP=ON -G Ninja
     cmake --build build
 
 # devcontainer
