@@ -60,7 +60,14 @@ QString Labels::getLabelForButton(SDL_Gamepad *gamepad, SDL_GamepadButton button
         return u"▢"_s;
     case SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE:
         return u"△"_s;
-    default:
-        return u"(B%1)"_s.arg(static_cast<int>(button)); // Unknown, just show the enum value for the button
+    default: { // Unknown, just show the enum value for the button
+
+        const int idx = static_cast<int>(button);
+        if (idx >= 0 && idx < 20) {
+            // ①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳
+            return QString(QChar(static_cast<char16_t>(u'①' + idx)));
+        }
+        return u"(B%1)"_s.arg(idx);
+    }
     }
 }
