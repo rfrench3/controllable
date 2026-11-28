@@ -18,18 +18,7 @@ ApplicationWindow {
         id: bar
         width: parent.width
 
-        Keys.onDownPressed: event => {
-            const currentTab = root.itemAt(root.currentIndex);
-            const target = currentTab.nextItemInFocusChain(true);
-
-            if (target && GP.QmlUtils.isDescendentOf(target, currentTab)) {
-                target.forceActiveFocus(Qt.TabFocusReason);
-            } else {
-                currentTab.forceActiveFocus(Qt.TabFocusReason);
-            }
-
-            event.accepted = true;
-        }
+        Keys.onDownPressed: root.focusCurrentPage()
 
         Repeater {
             model: root.children
@@ -43,11 +32,35 @@ ApplicationWindow {
     }
 
     // Set focus: true on the root Item of the application (this cannot be an ApplicationWindow)
-    // as well as on the first item within each page/FocusScope
     StackLayout {
         id: root
         anchors.fill: parent
         currentIndex: bar.currentIndex
+
+        function focusCurrentPage(): void {
+            const currentTab = root.itemAt(root.currentIndex);
+            if (!currentTab)
+                return;
+
+            const target = currentTab.nextItemInFocusChain(true);
+            if (target && GP.QmlUtils.isDescendentOf(target, currentTab)) {
+                target.forceActiveFocus(Qt.TabFocusReason);
+                GP.KeyNavigator.ensureVisible(target);
+            } else {
+                currentTab.forceActiveFocus(Qt.TabFocusReason);
+            }
+        }
+
+        onCurrentIndexChanged: {
+            const active = Window.activeFocusItem as Control;
+            if (!active || GP.QmlUtils.isDescendentOf(active, bar))
+                return;
+
+            const reason = active.focusReason;
+            if (reason === Qt.TabFocusReason || reason === Qt.BacktabFocusReason) {
+                focusCurrentPage();
+            }
+        }
 
         focus: true
         Keys.onPressed: event => {
@@ -56,61 +69,25 @@ ApplicationWindow {
 
             if (event.key === GP.GamepadKeys.LEFT_BUMPER) {
                 bar.decrementCurrentIndex();
+                focusCurrentPage();
                 event.accepted = true;
                 return;
             }
 
             if (event.key === GP.GamepadKeys.RIGHT_BUMPER) {
                 bar.incrementCurrentIndex();
+                focusCurrentPage();
                 event.accepted = true;
                 return;
             }
 
             if (event.key === GP.GamepadKeys.DOWN) {
-                const currentTab = root.itemAt(root.currentIndex) as FocusScope;
-                const target = currentTab.nextItemInFocusChain(true);
-
-                if (target && GP.QmlUtils.isDescendentOf(target, currentTab)) {
-                    target.forceActiveFocus(Qt.TabFocusReason);
-                } else {
-                    currentTab.forceActiveFocus(Qt.TabFocusReason);
-                }
-
+                focusCurrentPage();
                 event.accepted = true;
                 return;
             }
         }
 
-        FocusScope {
-            id: homeTab
-            readonly property string title: "ListView"
-            GP.ScrollHandler {
-                target: view.ScrollBar.vertical
-            }
-
-            Layout.fillHeight: true
-
-            ScrollView {
-                id: view
-                anchors.fill: parent
-                ListView {
-                    model: 20
-
-                    // focus: true
-
-                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem)
-
-                    activeFocusOnTab: true
-
-                    spacing: 16
-
-                    delegate: Button {
-                        required property int index
-                        text: "Item " + index
-                    }
-                }
-            }
-        }
         FocusScope {
             id: discoverTab
             readonly property string title: "Flickable"
@@ -144,7 +121,36 @@ ApplicationWindow {
 
                 Text {
                     anchors.fill: parent
-                    text: "This text shows that horizontal movement functions properly!"
+                    text: "Keyboard/Gamepad Controls:\n%1, esc: exit app\n%2, [: move 1 tab left\n%3, ]: move 1 tab right\ndpad, arrow keys: navigate up, down, left, right\n%4, spacebar: activate selected item\n%5, x: secondary action\n%6, c: tertiary action\nRight stick, mouse/trackpad/etc: scroll active area" //
+                    .arg(GP.Labels.east).arg("(LB)").arg("(RB)").arg(GP.Labels.south).arg(GP.Labels.west).arg(GP.Labels.north)
+                }
+            }
+        }
+        FocusScope {
+            id: homeTab
+            readonly property string title: "ListView"
+            GP.ScrollHandler {
+                target: view.ScrollBar.vertical
+            }
+
+            Layout.fillHeight: true
+
+            ScrollView {
+                id: view
+                anchors.fill: parent
+                ListView {
+                    model: 20
+
+                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem, homeTab)
+
+                    activeFocusOnTab: true
+
+                    spacing: 16
+
+                    delegate: Button {
+                        required property int index
+                        text: "Item " + index
+                    }
                 }
             }
         }
@@ -168,12 +174,11 @@ ApplicationWindow {
 
                 ColumnLayout {
 
-                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem)
+                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem, tabThree)
 
                     width: view3.availableWidth
 
                     Button {
-                        focus: true
                         text: "button1"
                     }
                     Button {
@@ -212,12 +217,11 @@ ApplicationWindow {
                 ScrollBar.vertical.policy: ScrollBar.AlwaysOff
 
                 RowLayout {
-                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem)
+                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem, tabFour)
 
                     height: view4.availableHeight
 
                     Button {
-                        focus: true
                         text: "button1"
                     }
                     Button {
@@ -261,7 +265,6 @@ ApplicationWindow {
                     Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem, col5)
 
                     Button {
-                        // focus: true
                         text: "button1"
                     }
                     Button {

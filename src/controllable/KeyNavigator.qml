@@ -41,18 +41,21 @@ Item {
         if (!item)
             return null;
 
-        let next = item.nextItemInFocusChain(forward);
+        const firstNext = item.nextItemInFocusChain(forward);
+        let next = firstNext;
 
         for (let i = 0; i < 512; i++) {
-            if (!next)
+            if (!next || next === item)
                 break;
             if (parentItem === null || QmlUtils.isDescendentOf(next, parentItem))
                 return next;
+
             next = next.nextItemInFocusChain(forward);
+            if (next === firstNext)
+                break; // Wrapped around the entire focus chain
         }
 
-        console.warn("Next item in focus scope not found after 512 tries, returning original item.");
-
+        console.warn("Next item in focus scope not found, returning original item.");
         return item;
     }
 
@@ -72,32 +75,31 @@ Item {
         if (navigateListView(direction, fromItem))
             return true;
 
-        const prevItem = __nextItemInScope(fromItem, maxParent, false);
-        const nextItem = __nextItemInScope(fromItem, maxParent, true);
+        let forward = true;
+        let reason = Qt.TabFocusReason;
 
-        let targetItem = null;
-
+        // TODO: handle UP/LEFT and DOWN/RIGHT differently depending on the
+        // parent container, e.g. ColumnLayout vs RowLayout vs GridLayout
         switch (direction) {
         case GamepadKeys.UP:
-            targetItem = prevItem;
-            targetItem.forceActiveFocus(Qt.BacktabFocusReason);
+        case GamepadKeys.LEFT:
+            forward = false;
+            reason = Qt.BacktabFocusReason;
             break;
         case GamepadKeys.DOWN:
-            targetItem = nextItem;
-            targetItem.forceActiveFocus(Qt.TabFocusReason);
-            break;
-        case GamepadKeys.LEFT:
-            targetItem = prevItem;
-            targetItem.forceActiveFocus(Qt.BacktabFocusReason);
-            break;
         case GamepadKeys.RIGHT:
-            targetItem = nextItem;
-            targetItem.forceActiveFocus(Qt.TabFocusReason);
+            forward = true;
+            reason = Qt.TabFocusReason;
             break;
         default:
             return false;
         }
 
+        const targetItem = __nextItemInScope(fromItem, maxParent, forward);
+        if (!targetItem)
+            return false;
+
+        targetItem.forceActiveFocus(reason);
         ensureVisible(targetItem);
         return true;
     }

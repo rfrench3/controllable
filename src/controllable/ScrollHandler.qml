@@ -72,7 +72,8 @@ Item {
                     return 1;
 
                 // sqrt keeps very large content from ramping up uncontrollably
-                const sizeFactor = Math.min(Math.sqrt(ratio), 1);
+                // const sizeFactor = Math.min(Math.sqrt(ratio), 1);
+                const sizeFactor = clamp(Math.sqrt(ratio), 1, 5);
 
                 return 1 + ((runtime - startDelay) / speed) * sizeFactor;
             }
@@ -98,8 +99,8 @@ Item {
 
                 scrollBar.position = clamp(new_pos, min_pos, max_pos);
             } else if (root.target instanceof Flickable) {
-                const deltaY = (Math.abs(Gamepad.rightY) > Gamepad.deadzone) ? Gamepad.rightY : 0;
-                const deltaX = (Math.abs(Gamepad.rightX) > Gamepad.deadzone) ? Gamepad.rightX : 0;
+                const deltaY = (Math.abs(Gamepad.rightY) > Gamepad.deadzone) ? Gamepad.rightY * calculateRampUp(contentRatio(true)) : 0;
+                const deltaX = (Math.abs(Gamepad.rightX) > Gamepad.deadzone) ? Gamepad.rightX * calculateRampUp(contentRatio(false)) : 0;
 
                 if (flickable.contentHeight > flickable.height) {
                     const min_pos = flickable.originY;
