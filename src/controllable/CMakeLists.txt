@@ -3,7 +3,7 @@
 
 add_library(qt6-controllable)
 
-set_source_files_properties(KeyNavigator.qml PROPERTIES
+set_source_files_properties(KeyNavigator.qml QmlUtils.qml PROPERTIES
     QT_QML_SINGLETON_TYPE TRUE
 )
 
@@ -29,6 +29,7 @@ ecm_target_qml_sources(qt6-controllable
     ScrollHandler.qml
     GamepadSupport.qml
     KeyNavigator.qml
+    QmlUtils.qml
 )
 
 target_link_libraries(qt6-controllable
