@@ -121,8 +121,8 @@ ApplicationWindow {
         }
         Item {
             id: tabThree
-            GP.PageNavigation {
-                targetScrollbar: viewt.ScrollBar.vertical
+            GP.ScrollHandler {
+                target: viewt.ScrollBar.vertical
             }
 
             Layout.fillHeight: true
@@ -134,6 +134,9 @@ ApplicationWindow {
                 anchors.bottom: parent.bottom
 
                 ColumnLayout {
+
+                    Keys.onPressed: event => GP.KeyNavigator.navigateEvent(event, Window.activeFocusItem)
+
                     anchors.fill: parent
                     Button {
                         text: "button1"
@@ -145,11 +148,11 @@ ApplicationWindow {
                         text: ["Controller labels", GP.Labels.south, GP.Labels.east, GP.Labels.west, GP.Labels.north].join(', ')
                     }
                     Repeater {
-                        model: 1000
+                        model: 100
                         delegate: Button {
                             required property int index
                             text: `Button ${index + 3}`
-                            enabled: index % 5 === 0
+                            enabled: index % 5 !== 0
                         }
                     }
                 }

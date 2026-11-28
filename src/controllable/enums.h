@@ -4,6 +4,7 @@
 // Register relevant SDL3 enums with Qt
 
 #include <SDL3/SDL_gamepad.h>
+#include <qnamespace.h>
 #include <qobject.h>
 #include <qqml.h>
 #include <qqmlintegration.h>
@@ -62,7 +63,11 @@ public:
         TERTIARY = Qt::Key_C,
         BACK = Qt::Key_Escape,
         LEFT_BUMPER = Qt::Key_BracketLeft,
-        RIGHT_BUMPER = Qt::Key_BracketRight
+        RIGHT_BUMPER = Qt::Key_BracketRight,
+        UP = Qt::Key_Up,
+        DOWN = Qt::Key_Down,
+        LEFT = Qt::Key_Left,
+        RIGHT = Qt::Key_Right
     };
     Q_ENUM(BUTTON)
 };

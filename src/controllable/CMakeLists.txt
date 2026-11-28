@@ -3,6 +3,10 @@
 
 add_library(qt6-controllable)
 
+set_source_files_properties(KeyNavigator.qml PROPERTIES
+    QT_QML_SINGLETON_TYPE TRUE
+)
+
 ecm_add_qml_module(qt6-controllable
     URI "io.github.rfrench3.controllable"
     GENERATE_PLUGIN_SOURCE
@@ -24,6 +28,7 @@ ecm_target_qml_sources(qt6-controllable
     PageNavigation.qml
     ScrollHandler.qml
     GamepadSupport.qml
+    KeyNavigator.qml
 )
 
 target_link_libraries(qt6-controllable
